@@ -14,12 +14,12 @@ import { sanitizeContent } from "@/utils/sanitize";
 
 const STORAGE_KEY = "builder-store";
 
-interface BuilderTemplate extends Omit<Template, "sections"> {
+type BuilderTemplate = Omit<Template, "sections"> & {
   sectionOrder: string[];
   sectionMap: Record<string, TemplateSection>;
-}
+};
 
-interface BuilderState {
+type BuilderState = {
   templateMap: Record<string, BuilderTemplate>;
   selectedElementId: string | null;
 
@@ -44,7 +44,7 @@ interface BuilderState {
     file: File,
   ) => void;
   resetTemplate: (templateId: string) => void;
-}
+};
 
 type PersistedBuilderState = Pick<
   BuilderState,

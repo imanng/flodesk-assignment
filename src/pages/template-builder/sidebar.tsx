@@ -6,9 +6,9 @@ import type { TemplateElement } from '@/types/template';
 import { ElementSettings } from './element-settings';
 import { PageSettings } from './page-settings';
 
-interface SidebarProps {
+type SidebarProps = {
   templateId: string;
-}
+};
 
 const getSettingsTitle = (elementType?: TemplateElement['type']): string => {
   if (!elementType) return 'Page Settings';

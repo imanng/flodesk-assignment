@@ -1,10 +1,10 @@
 import { Arrange, FieldLabel, GhostInput,Stack } from '@flodesk/grain';
 
-interface ColorPickerProps {
+type ColorPickerProps = {
   value: string;
   onChange: (color: string) => void;
   label?: string;
-}
+};
 
 export const ColorPicker = ({ value, onChange, label }: ColorPickerProps) => {
   const hexValue = value.replace('#', '');

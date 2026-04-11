@@ -3,10 +3,10 @@ import { Box, Card, Stack, Text } from '@flodesk/grain';
 import { TemplatePreview } from '@/components/template-preview';
 import type { Template } from '@/types/template';
 
-interface TemplateCardProps {
+type TemplateCardProps = {
   template: Template;
   onClick: () => void;
-}
+};
 
 export const TemplateCard = ({ template, onClick }: TemplateCardProps) => (
   <Card

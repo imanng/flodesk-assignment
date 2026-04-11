@@ -6,14 +6,14 @@ import {
 } from '@/components/form';
 import { FONT_PRESET_OPTIONS } from '@/constants/font-presets';
 import { useBuilderActions } from '@/hooks/use-builder-actions';
-import { usePageSelector } from '@/hooks/use-page-selector';
+import { usePageSettings } from '@/hooks/use-page-settings';
 import type { PageSettings } from '@/types/template';
 import { parsePx } from '@/utils/parse-px';
 
 export const PageBackgroundColorField = ({
   templateId,
 }: PageBuilderSettingsProps) => {
-  const backgroundColor = usePageSelector(
+  const backgroundColor = usePageSettings(
     templateId,
     (pageSettings) => pageSettings?.backgroundColor,
   );
@@ -29,7 +29,7 @@ export const PageBackgroundColorField = ({
 };
 
 export const PageTypographyField = ({ templateId }: PageBuilderSettingsProps) => {
-  const fontPreset = usePageSelector(
+  const fontPreset = usePageSettings(
     templateId,
     (pageSettings) => pageSettings?.fontPreset ?? 'modern-sans',
   );
@@ -53,7 +53,7 @@ export const PageTypographyField = ({ templateId }: PageBuilderSettingsProps) =>
 };
 
 export const PageMaxWidthField = ({ templateId }: PageBuilderSettingsProps) => {
-  const maxWidth = usePageSelector(
+  const maxWidth = usePageSettings(
     templateId,
     (pageSettings) => pageSettings?.maxWidth ?? '800px',
   );

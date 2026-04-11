@@ -13,9 +13,9 @@ import { selectTemplateName, useBuilderStore } from '@/store/builder-store';
 
 import { ExportButton } from './export-button';
 
-export interface TemplateBuilderHeaderProps {
+export type TemplateBuilderHeaderProps = {
   templateId: string;
-}
+};
 
 export const TemplateBuilderHeader = ({ templateId }: TemplateBuilderHeaderProps) => {
   const navigate = useNavigate();

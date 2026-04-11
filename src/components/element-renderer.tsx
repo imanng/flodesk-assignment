@@ -2,12 +2,12 @@ import type { CSSProperties, JSX } from 'react';
 
 import type { ElementSettings,TemplateElement } from '@/types/template';
 
-interface ElementRendererProps {
+type ElementRendererProps = {
   element: TemplateElement;
   isSelected?: boolean;
   isInteractive?: boolean;
   onClick?: (id: string) => void;
-}
+};
 
 const settingsToStyle = (settings: ElementSettings): CSSProperties => {
   const style: CSSProperties = {

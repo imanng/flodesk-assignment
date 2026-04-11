@@ -11,32 +11,30 @@ import {
   TextToggle,
   TextToggleGroup,
 } from '@flodesk/grain';
-import { type ChangeEvent, type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 
 import { ColorPicker } from '@/components/color-picker';
-export interface BuilderSettingsProps {
-  templateId: string;
-  elementId?: string;
-}
 
-export type ElementBuilderSettingsProps = BuilderSettingsProps & {
+export type PageBuilderSettingsProps = {
+  templateId: string;
+};
+
+export type ElementBuilderSettingsProps = PageBuilderSettingsProps & {
   elementId: string;
 };
 
-export type PageBuilderSettingsProps = Pick<BuilderSettingsProps, 'templateId'>;
-
-export interface ToggleOption<T extends string> {
+export type ToggleOption<T extends string> = {
   value: T;
   content: ReactNode;
   ariaLabel?: string;
-}
+};
 
-interface SettingsFieldProps {
+type SettingsFieldProps = {
   label: string;
   children: ReactNode;
   width?: string | number;
   htmlFor?: string;
-}
+};
 
 export const SettingsField = ({
   label,
@@ -50,13 +48,13 @@ export const SettingsField = ({
   </Stack>
 );
 
-interface SettingsTextAreaControlProps {
+type SettingsTextAreaControlProps = {
   id: string;
   label: string;
   value: string;
   rows: number;
   onChange: (value: string) => void;
-}
+};
 
 export const SettingsTextAreaControl = ({
   id,
@@ -70,19 +68,19 @@ export const SettingsTextAreaControl = ({
       id={id}
       value={value}
       rows={rows}
-      onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
+      onChange={(event) =>
         onChange(event.target.value)
       }
     />
   </SettingsField>
 );
 
-interface SettingsTextInputControlProps {
+type SettingsTextInputControlProps = {
   id: string;
   label: string;
   value: string;
   onChange: (value: string) => void;
-}
+};
 
 export const SettingsTextInputControl = ({
   id,
@@ -94,19 +92,19 @@ export const SettingsTextInputControl = ({
     <TextInput
       id={id}
       value={value}
-      onChange={(event: ChangeEvent<HTMLInputElement>) =>
+      onChange={(event) =>
         onChange(event.target.value)
       }
     />
   </SettingsField>
 );
 
-interface SettingsSelectControlProps {
+type SettingsSelectControlProps = {
   label: string;
   value: string;
   options: SelectOption[];
   onChange: (value: string) => void;
-}
+};
 
 export const SettingsSelectControl = ({
   label,
@@ -123,7 +121,7 @@ export const SettingsSelectControl = ({
   </SettingsField>
 );
 
-interface SettingsSliderControlProps {
+type SettingsSliderControlProps = {
   id: string;
   label: string;
   min: number;
@@ -132,7 +130,7 @@ interface SettingsSliderControlProps {
   value: number;
   displayValue: string;
   onChange: (value: number) => void;
-}
+};
 
 export const SettingsSliderControl = ({
   id,
@@ -151,7 +149,7 @@ export const SettingsSliderControl = ({
       max={max}
       step={step}
       value={value}
-      onChange={(event: ChangeEvent<HTMLInputElement>) =>
+      onChange={(event) =>
         onChange(event.target.valueAsNumber)
       }
     />
@@ -161,11 +159,11 @@ export const SettingsSliderControl = ({
   </SettingsField>
 );
 
-interface SettingsColorControlProps {
+type SettingsColorControlProps = {
   label: string;
   value: string;
   onChange: (value: string) => void;
-}
+};
 
 export const SettingsColorControl = ({
   label,
@@ -177,13 +175,13 @@ export const SettingsColorControl = ({
   </SettingsField>
 );
 
-interface SettingsToggleControlProps<T extends string> {
+type SettingsToggleControlProps<T extends string> = {
   label: string;
   value: T;
   options: ToggleOption<T>[];
   onChange: (value: T) => void;
   className?: string;
-}
+};
 
 export const SettingsToggleControl = <T extends string>({
   label,

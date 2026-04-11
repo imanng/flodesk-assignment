@@ -28,7 +28,7 @@ const portfolio: Template = {
             padding: "48px 16px 8px",
             backgroundColor: "transparent",
           },
-          data: { text: "Hi, I'm Jane", level: 1 },
+          data: { text: "Hi, I'm An", level: 1 },
         },
         {
           id: "hero-subheading",
@@ -135,7 +135,7 @@ const portfolio: Template = {
             padding: "48px 16px 24px",
             backgroundColor: "transparent",
           },
-          data: { text: "© 2026 Jane Doe" },
+          data: { text: "© 2026 An Nguyen" },
         },
       ],
     },

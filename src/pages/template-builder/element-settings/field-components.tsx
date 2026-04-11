@@ -11,9 +11,9 @@ import { useBuilderActions } from '@/hooks/use-builder-actions';
 import { useElementSelector } from '@/hooks/use-element-selector';
 import { parsePx } from '@/utils/parse-px';
 
-interface TextContentFieldProps extends ElementBuilderSettingsProps {
+type TextContentFieldProps = ElementBuilderSettingsProps & {
   rows: number;
-}
+};
 
 export const TextContentField = ({
   templateId,

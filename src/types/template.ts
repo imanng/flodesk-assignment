@@ -1,4 +1,4 @@
-export interface ElementSettings {
+export type ElementSettings = {
   fontSize: string;
   color: string;
   textAlign: "left" | "center" | "right";
@@ -8,7 +8,7 @@ export interface ElementSettings {
   fontWeight?: string;
   letterSpacing?: string;
   lineHeight?: string;
-}
+};
 
 export type FontPreset =
   | "modern-sans"
@@ -17,12 +17,12 @@ export type FontPreset =
   | "mono";
 export type ElementType = "heading" | "text" | "image" | "button" | "divider";
 
-export interface BaseElement<T extends ElementType, D> {
+export type BaseElement<T extends ElementType, D> = {
   id: string;
   type: T;
   settings: ElementSettings;
   data: D;
-}
+};
 
 export type TextElement = BaseElement<
   "text",
@@ -78,36 +78,36 @@ export type TemplateElement =
   | ImageElement
   | DividerElement;
 
-export interface SectionSettings {
+export type SectionSettings = {
   padding: string;
   backgroundColor?: string;
   borderRadius?: string;
-}
+};
 
-export interface TemplateColumn {
+export type TemplateColumn = {
   id: string;
   elements: TemplateElement[];
-}
+};
 
-export interface TemplateSection {
+export type TemplateSection = {
   id: string;
   layout: "stack" | "columns";
   gap: string;
   settings: SectionSettings;
   elements?: TemplateElement[];
   columns?: TemplateColumn[];
-}
+};
 
-export interface PageSettings {
+export type PageSettings = {
   backgroundColor: string;
   fontPreset: FontPreset;
   maxWidth: string;
-}
+};
 
-export interface Template {
+export type Template = {
   id: string;
   name: string;
   description: string;
   pageSettings: PageSettings;
   sections: TemplateSection[];
-}
+};

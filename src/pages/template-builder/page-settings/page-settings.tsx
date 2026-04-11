@@ -1,12 +1,12 @@
 import { Stack } from '@flodesk/grain';
 
 import { type PageBuilderSettingsProps,SettingsSections } from '@/components/form';
-import { usePageSelector } from '@/hooks/use-page-selector';
+import { usePageSettings } from '@/hooks/use-page-settings';
 
 import { PAGE_SETTINGS_SECTIONS } from './schema';
 
 export const PageSettings = ({ templateId }: PageBuilderSettingsProps) => {
-  const hasPageSettings = usePageSelector(
+  const hasPageSettings = usePageSettings(
     templateId,
     (pageSettings) => Boolean(pageSettings),
   );

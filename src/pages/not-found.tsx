@@ -1,10 +1,10 @@
 import { Flex, Text, TextButton } from '@flodesk/grain';
 import { useNavigate } from 'react-router-dom';
 
-export interface NotFoundProps {
+export type NotFoundProps = {
   title?: string;
   description?: string;
-}
+};
 
 export const NotFound = ({
   title = 'Page not found',

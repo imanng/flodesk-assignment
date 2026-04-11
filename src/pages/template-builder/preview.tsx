@@ -10,17 +10,17 @@ import {
   useBuilderStore,
 } from '@/store/builder-store';
 
-interface PreviewProps {
+type PreviewProps = {
   templateId: string;
-}
+};
 
-interface ConnectedPreviewSectionProps {
+type ConnectedPreviewSectionProps = {
   templateId: string;
   sectionId: string;
   selectedElementId: string | null;
   isInteractive: boolean;
   onSelectElement?: (id: string) => void;
-}
+};
 
 const ConnectedPreviewSection = ({
   templateId,

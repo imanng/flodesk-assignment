@@ -1,7 +1,7 @@
 import { selectPageSettings, useBuilderStore } from '@/store/builder-store';
 import type { PageSettings } from '@/types/template';
 
-export const usePageSelector = <T,>(
+export const usePageSettings = <T,>(
   templateId: string,
   selector: (pageSettings: PageSettings | undefined) => T,
 ): T =>

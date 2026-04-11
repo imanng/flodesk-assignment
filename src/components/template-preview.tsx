@@ -6,12 +6,12 @@ import type { Template, TemplateColumn,TemplateSection } from '@/types/template'
 
 import { ElementRenderer } from './element-renderer';
 
-interface PreviewColumnProps {
+type PreviewColumnProps = {
   col: TemplateColumn;
   selectedElementId?: string | null;
   isInteractive: boolean;
   onSelectElement?: (id: string) => void;
-}
+};
 
 const PreviewColumn = ({
   col,
@@ -32,12 +32,12 @@ const PreviewColumn = ({
   </Flex>
 );
 
-interface PreviewSectionProps {
+type PreviewSectionProps = {
   section: TemplateSection;
   selectedElementId?: string | null;
   isInteractive: boolean;
   onSelectElement?: (id: string) => void;
-}
+};
 
 export const TemplatePreviewSection = ({
   section,
@@ -87,13 +87,13 @@ export const TemplatePreviewSection = ({
   );
 };
 
-interface TemplatePreviewProps {
+type TemplatePreviewProps = {
   template: Template;
   selectedElementId?: string | null;
   isInteractive?: boolean;
   onSelectElement?: (id: string) => void;
   onDeselectAll?: () => void;
-}
+};
 
 export const TemplatePreview = ({
   template,
