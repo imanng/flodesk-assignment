@@ -7,9 +7,9 @@ export const FONT_WEIGHT_OPTIONS: SelectOption[] = [
 ];
 
 export const HEADING_LEVEL_OPTIONS: SelectOption[] = [
-  { value: "1", content: "H1" },
-  { value: "2", content: "H2" },
-  { value: "3", content: "H3" },
+  { value: "1", content: "Heading 1" },
+  { value: "2", content: "Heading 2" },
+  { value: "3", content: "Heading 3" },
 ];
 
 export const TARGET_OPTIONS: SelectOption[] = [
