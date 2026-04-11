@@ -21,9 +21,9 @@ export function TemplateCard({ template, onClick }: TemplateCardProps) {
       onClick={onClick}
     >
       <Box className="template-gallery__card-preview" overflow="hidden" borderSide="bottom" flex="1" height={40}>
-        <div className="template-gallery__card-preview-inner">
+        <Box className="template-gallery__card-preview-inner">
           <TemplatePreview template={template} />
-        </div>
+        </Box>
       </Box>
       <Box padding="l">
         <Stack gap="s">

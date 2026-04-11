@@ -39,7 +39,7 @@ export function TemplateGallery() {
             </Text>
           </Stack>
 
-          <Arrange columns="repeat(auto-fill, minmax(300px, 1fr))" gap="l">
+          <Arrange columns="repeat(auto-fill, minmax(300px, 1fr))" gap="l" alignItems="stretch">
             {templates.map((template) => (
               <TemplateCard
                 key={template.id}

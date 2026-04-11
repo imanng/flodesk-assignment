@@ -158,7 +158,7 @@ export const useBuilderStore = create<BuilderState>((set) => ({
               ...template,
               sections: mapElement(template.sections, elementId, (el) => ({
                 ...el,
-                data: { ...el.data, src, sourceType: 'upload' },
+                data: { ...el.data, src, source: 'upload' },
               } as TemplateElement)),
             },
           },

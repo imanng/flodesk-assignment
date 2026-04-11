@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   Box,
   Stack,
@@ -7,33 +8,129 @@ import {
   Textarea,
   Select,
   Slider,
-  IconButton,
   Button,
+  Popover,
+  TextToggleGroup,
+  TextToggle,
+  Icon,
+  IconUpload,
   IconTextAlignLeft,
   IconTextAlignCenter,
   IconTextAlignRight,
-  IconUpload,
+  IconLink,
 } from '@flodesk/grain';
 import type { TemplateElement } from '@/types/template';
 import { useBuilderStore } from '@/store/builder-store';
 import { ColorPicker } from '@/components/color-picker';
+import { sanitizeImageUrlForImgSrc } from '@/utils/sanitize';
+import {
+  FONT_WEIGHT_OPTIONS,
+  HEADING_LEVEL_OPTIONS,
+  TARGET_OPTIONS,
+} from '@/constants/element-settings-options';
 
-const FONT_WEIGHT_OPTIONS = [
-  { value: 'normal', content: 'Normal' },
-  { value: 'medium', content: 'Medium' },
-  { value: 'bold', content: 'Bold' },
-];
+type ImageElement = Extract<TemplateElement, { type: 'image' }>;
 
-const HEADING_LEVEL_OPTIONS = [
-  { value: '1', content: 'H1' },
-  { value: '2', content: 'H2' },
-  { value: '3', content: 'H3' },
-];
+interface ImageSourceFieldsProps {
+  templateId: string;
+  element: ImageElement;
+  updateImageData: (tid: string, eid: string, patch: Record<string, unknown>) => void;
+  updateElementImage: (tid: string, eid: string, file: File) => void;
+}
 
-const TARGET_OPTIONS = [
-  { value: '_self', content: 'Same tab' },
-  { value: '_blank', content: 'New tab' },
-];
+function ImageSourceFields({
+  templateId,
+  element,
+  updateImageData,
+  updateElementImage,
+}: ImageSourceFieldsProps) {
+  const eid = element.id;
+  const [urlOpen, setUrlOpen] = useState(false);
+  const [urlDraft, setUrlDraft] = useState(element.data.src);
+
+  const applyUrl = () => {
+    const safe = sanitizeImageUrlForImgSrc(urlDraft);
+    if (!safe) return;
+    updateImageData(templateId, eid, {
+      src: safe,
+      source: 'url',
+    });
+    setUrlOpen(false);
+  };
+
+  return (
+    <Stack gap="xs">
+      <Text size="s" weight="medium" color="content2">Image</Text>
+      <Box
+        borderSide="all"
+        radius="s"
+        overflow="hidden"
+      >
+        <img
+          src={element.data.src}
+          alt={element.data.alt}
+          style={{ width: '100%', height: '120px', display: 'block', objectFit: 'contain' }}
+        />
+      </Box>
+      <Arrange columns="repeat(2, 1fr)" gap="s">
+        <Popover
+          isOpen={urlOpen}
+          onClose={() => setUrlOpen(false)}
+          placement="bottom"
+          hasPortal
+          width="320px"
+          trigger={(
+            <Button
+              icon={<IconLink />}
+              variant="neutral"
+              type="button"
+              onClick={() => {
+                setUrlDraft(element.data.src);
+                setUrlOpen(true);
+              }}
+            >
+              Set URL
+            </Button>
+          )}
+        >
+          <Stack gap="m">
+            <Text size="s" weight="medium">Image URL</Text>
+            <TextInput
+              id={`image-url-${eid}`}
+              value={urlDraft}
+              onChange={(e) => setUrlDraft(e.target.value)}
+            />
+            <Arrange gap="s" justifyContent="end">
+              <Button variant="neutral" type="button" onClick={() => setUrlOpen(false)}>
+                Cancel
+              </Button>
+              <Button variant="accent" type="button" onClick={applyUrl}>
+                Apply
+              </Button>
+            </Arrange>
+          </Stack>
+        </Popover>
+        <Button
+          variant="neutral"
+          icon={<IconUpload />}
+          type="button"
+          onClick={() => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = () => {
+              const file = input.files?.[0];
+              if (file) updateElementImage(templateId, eid, file);
+            };
+            input.click();
+          }}
+        >
+          Upload
+        </Button>
+      </Arrange>
+    </Stack>
+  );
+}
 
 interface ElementSettingsProps {
   element: TemplateElement;
@@ -51,7 +148,7 @@ export function ElementSettings({ element, templateId }: ElementSettingsProps) {
   const eid = element.id;
 
   return (
-    <Stack gap="l" paddingX="l" paddingY="m">
+    <Stack gap="l" paddingX="l" paddingY="m" width="100%">
       {element.type === 'text' && (
         <Stack gap="xs">
           <Text size="s" weight="medium" color="content2">Content</Text>
@@ -67,21 +164,22 @@ export function ElementSettings({ element, templateId }: ElementSettingsProps) {
       {element.type === 'heading' && (
         <>
           <Stack gap="xs">
-            <Text size="s" weight="medium" color="content2">Content</Text>
-            <TextInput
-              id={`content-${eid}`}
-              value={element.data.text}
-              onChange={(e) => updateTextLikeData(templateId, eid, { text: e.target.value })}
-            />
-          </Stack>
-          <Stack gap="xs">
-            <Text size="s" weight="medium" color="content2">Heading level</Text>
+            <Text size="s" weight="medium" color="content2">Level</Text>
             <Select
               options={HEADING_LEVEL_OPTIONS}
               value={String(element.data.level)}
               onChange={(option) =>
                 updateTextLikeData(templateId, eid, { level: Number(option.value) })
               }
+            />
+          </Stack>
+          <Stack gap="xs">
+            <Text size="s" weight="medium" color="content2">Content</Text>
+            <Textarea
+              id={`content-${eid}`}
+              value={element.data.text}
+              onChange={(e) => updateTextLikeData(templateId, eid, { text: e.target.value })}
+              rows={3}
             />
           </Stack>
         </>
@@ -91,12 +189,13 @@ export function ElementSettings({ element, templateId }: ElementSettingsProps) {
         <>
           <Stack gap="xs">
             <Text size="s" weight="medium" color="content2">Label</Text>
-            <TextInput
+            <Textarea
               id={`label-${eid}`}
               value={element.data.label}
               onChange={(e) =>
                 updateTextLikeData(templateId, eid, { label: e.target.value })
               }
+              rows={3}
             />
           </Stack>
           <Stack gap="xs">
@@ -124,35 +223,12 @@ export function ElementSettings({ element, templateId }: ElementSettingsProps) {
 
       {element.type === 'image' && (
         <>
-          <Stack gap="xs">
-            <Text size="s" weight="medium" color="content2">Image</Text>
-            <Box
-              borderSide="all"
-              radius="s"
-              overflow="hidden"
-            >
-              <img
-                src={element.data.src}
-                alt={element.data.alt}
-                style={{ width: '100%', height: '120px', display: 'block', objectFit: 'contain' }}
-              />
-            </Box>
-            <Button
-              icon={<IconUpload />}
-              onClick={() => {
-                const input = document.createElement('input');
-                input.type = 'file';
-                input.accept = 'image/*';
-                input.onchange = () => {
-                  const file = input.files?.[0];
-                  if (file) updateElementImage(templateId, eid, file);
-                };
-                input.click();
-              }}
-            >
-              Change image
-            </Button>
-          </Stack>
+          <ImageSourceFields
+            templateId={templateId}
+            element={element}
+            updateImageData={updateImageData}
+            updateElementImage={updateElementImage}
+          />
           <Stack gap="xs">
             <Text size="s" weight="medium" color="content2">Alt text</Text>
             <TextInput
@@ -211,44 +287,63 @@ export function ElementSettings({ element, templateId }: ElementSettingsProps) {
           </Stack>
 
           {element.type !== 'image' && (
-            <Stack gap="xs">
+            <Stack gap="xs" width="100%">
               <Text size="s" weight="medium" color="content2">Alignment</Text>
-              <Arrange gap="xs">
-                <IconButton
-                  icon={<IconTextAlignLeft />}
-                  isActive={element.settings.textAlign === 'left'}
-                  onClick={() =>
-                    updateElementSettings(templateId, eid, { textAlign: 'left' })
-                  }
-                />
-                <IconButton
-                  icon={<IconTextAlignCenter />}
-                  isActive={element.settings.textAlign === 'center'}
-                  onClick={() =>
-                    updateElementSettings(templateId, eid, { textAlign: 'center' })
-                  }
-                />
-                <IconButton
-                  icon={<IconTextAlignRight />}
-                  isActive={element.settings.textAlign === 'right'}
-                  onClick={() =>
-                    updateElementSettings(templateId, eid, { textAlign: 'right' })
-                  }
-                />
-              </Arrange>
+              <Box
+                className="element-settings__text-toggles element-settings__text-toggles--align"
+                width="100%"
+              >
+                <TextToggleGroup hasFullWidth>
+                  <TextToggle
+                    isActive={element.settings.textAlign === 'left'}
+                    aria-label="Align left"
+                    onClick={() =>
+                      updateElementSettings(templateId, eid, { textAlign: 'left' })
+                    }
+                  >
+                    <Icon size="s" icon={<IconTextAlignLeft />} />
+                  </TextToggle>
+                  <TextToggle
+                    isActive={element.settings.textAlign === 'center'}
+                    aria-label="Align center"
+                    onClick={() =>
+                      updateElementSettings(templateId, eid, { textAlign: 'center' })
+                    }
+                  >
+                    <Icon size="s" icon={<IconTextAlignCenter />} />
+                  </TextToggle>
+                  <TextToggle
+                    isActive={element.settings.textAlign === 'right'}
+                    aria-label="Align right"
+                    onClick={() =>
+                      updateElementSettings(templateId, eid, { textAlign: 'right' })
+                    }
+                  >
+                    <Icon size="s" icon={<IconTextAlignRight />} />
+                  </TextToggle>
+                </TextToggleGroup>
+              </Box>
             </Stack>
           )}
 
           {element.type !== 'image' && (
-            <Stack gap="xs">
+            <Stack gap="xs" width="100%">
               <Text size="s" weight="medium" color="content2">Font weight</Text>
-              <Select
-                options={FONT_WEIGHT_OPTIONS}
-                value={element.settings.fontWeight ?? 'normal'}
-                onChange={(option) =>
-                  updateElementSettings(templateId, eid, { fontWeight: option.value })
-                }
-              />
+              <Box className="element-settings__text-toggles" width="100%">
+                <TextToggleGroup hasFullWidth>
+                  {FONT_WEIGHT_OPTIONS.map((opt) => (
+                    <TextToggle
+                      key={opt.value}
+                      isActive={(element.settings.fontWeight ?? 'normal') === opt.value}
+                      onClick={() =>
+                        updateElementSettings(templateId, eid, { fontWeight: opt.value })
+                      }
+                    >
+                      {opt.content}
+                    </TextToggle>
+                  ))}
+                </TextToggleGroup>
+              </Box>
             </Stack>
           )}
 

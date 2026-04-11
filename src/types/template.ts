@@ -35,13 +35,22 @@ export type ButtonElement = BaseElement<'button', {
   target?: '_self' | '_blank';
 }>;
 
+export type ImageSource = 'url' | 'upload';
+
+export const DEFAULT_IMAGE_SOURCE: ImageSource = 'url';
+
+export function getImageSource(data: { source?: ImageSource }): ImageSource {
+  return data.source ?? DEFAULT_IMAGE_SOURCE;
+}
+
 export type ImageElement = BaseElement<'image', {
   src: string;
   alt: string;
   decorative?: boolean;
   width?: number;
   height?: number;
-  sourceType?: 'placeholder' | 'upload';
+  /** How `src` was set. Omitted means {@link DEFAULT_IMAGE_SOURCE}. */
+  source?: ImageSource;
 }>;
 
 export type DividerElement = BaseElement<'divider', Record<string, never>>;

@@ -28,6 +28,7 @@ export function Preview({
         radius="m"
         overflow="hidden"
         className="template-builder__preview-canvas"
+        backgroundColor="background"
       >
         <TemplatePreview
           template={template}

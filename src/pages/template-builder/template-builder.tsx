@@ -39,7 +39,7 @@ export function TemplateBuilder() {
           </TextButton>
         </Flex>
 
-        <Text weight="medium" hasEllipsis>{template.name}</Text>
+        <Text weight="medium" size="l" hasEllipsis>{template.name}</Text>
 
         <Flex justifyContent="end">
           <ExportButton template={template} />

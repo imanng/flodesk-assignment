@@ -38,7 +38,7 @@ export function Sidebar({ template, selectedElementId }: SidebarProps) {
     : undefined;
 
   return (
-    <Stack className="sidebar" backgroundColor="background2" borderSide="left" overflowY="auto">
+    <Stack className="sidebar" backgroundColor="background" borderSide="left" overflowY="auto">
       <Box paddingX="l" paddingY="m" borderSide="bottom">
         <Text size="m" weight="medium">
           {getSettingsTitle(selectedElement)}

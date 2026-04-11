@@ -1,16 +1,7 @@
 import type { Template } from '@/types/template';
 
-const PLACEHOLDER_IMAGE_LIGHT = `data:image/svg+xml,${encodeURIComponent(
-  '<svg xmlns="http://www.w3.org/2000/svg" width="800" height="400"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#e5e7eb"/><stop offset="100%" stop-color="#d1d5db"/></linearGradient></defs><rect width="800" height="400" fill="url(#g)"/><text x="400" y="210" text-anchor="middle" fill="#9ca3af" font-family="sans-serif" font-size="18">Your image here</text></svg>',
-)}`;
-
-const PLACEHOLDER_IMAGE_DARK = `data:image/svg+xml,${encodeURIComponent(
-  '<svg xmlns="http://www.w3.org/2000/svg" width="960" height="400"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#1e293b"/><stop offset="100%" stop-color="#0f172a"/></linearGradient></defs><rect width="960" height="400" fill="url(#g)"/><circle cx="200" cy="200" r="80" fill="#1e3a5f" opacity="0.5"/><circle cx="700" cy="150" r="120" fill="#312e81" opacity="0.3"/><text x="480" y="210" text-anchor="middle" fill="#475569" font-family="sans-serif" font-size="18">Your image here</text></svg>',
-)}`;
-
-const PLACEHOLDER_IMAGE_WARM = `data:image/svg+xml,${encodeURIComponent(
-  '<svg xmlns="http://www.w3.org/2000/svg" width="880" height="440"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#e8dcc8"/><stop offset="100%" stop-color="#d4c5a9"/></linearGradient></defs><rect width="880" height="440" fill="url(#g)"/><text x="440" y="230" text-anchor="middle" fill="#8b7355" font-family="serif" font-size="18">Your image here</text></svg>',
-)}`;
+/** Default hero / section image in starter templates (external placeholder service). */
+const INITIAL_IMAGE_URL = 'https://placehold.co/600x400';
 
 const portfolio: Template = {
   id: 'portfolio',
@@ -98,9 +89,8 @@ const portfolio: Template = {
             borderRadius: '8px',
           },
           data: {
-            src: PLACEHOLDER_IMAGE_LIGHT,
+            src: INITIAL_IMAGE_URL,
             alt: 'Portfolio showcase',
-            sourceType: 'placeholder',
           },
         },
       ],
@@ -350,9 +340,8 @@ const eventLaunch: Template = {
             borderRadius: '12px',
           },
           data: {
-            src: PLACEHOLDER_IMAGE_DARK,
+            src: INITIAL_IMAGE_URL,
             alt: 'Conference venue',
-            sourceType: 'placeholder',
           },
         },
       ],
@@ -433,9 +422,8 @@ const restaurant: Template = {
             borderRadius: '4px',
           },
           data: {
-            src: PLACEHOLDER_IMAGE_WARM,
+            src: INITIAL_IMAGE_URL,
             alt: 'Restaurant interior',
-            sourceType: 'placeholder',
           },
         },
       ],

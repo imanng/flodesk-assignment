@@ -44,6 +44,8 @@ body,
 
 .template-gallery__card {
   cursor: pointer;
+  height: 100%;
+  background-color: var(--grn-color-background);
 }
 
 .template-gallery__card-preview {
@@ -95,8 +97,18 @@ body,
   transition: box-shadow 0.15s ease;
   position: relative;
 
+  // Hover ring: semi-transparent selection reads on both light and dark page backgrounds
+  // (neutral border2 alone disappears on dark templates).
   &:hover:not(.element-renderer--selected) {
-    box-shadow: inset 0 0 0 1px var(--grn-color-border2, #d1d5db);
+    box-shadow: inset 0 0 0 1px var(--grn-color-border2);
+
+    @supports (color: color-mix(in srgb, white, black)) {
+      box-shadow: inset 0 0 0 1px color-mix(
+        in srgb,
+        var(--grn-color-selection) 52%,
+        transparent
+      );
+    }
   }
 }
 
@@ -110,6 +122,36 @@ body,
     inset: 0;
     border: 2px dashed var(--grn-color-selection, #3b82f6);
     pointer-events: none;
+  }
+}
+
+// ─── Element settings (sidebar) ─────────────────────────────────────────────
+
+.element-settings__text-toggles {
+  > div {
+    padding: 1px;
+  }
+
+  .TextToggle {
+    height: calc(var(--grn-textbox-height-s, 28px) - 4px);
+    padding: 0 var(--grn-space-xs, 8px);
+    font-size: var(--grn-textbox-text-s, var(--grn-text-s));
+    line-height: 1.2;
+  }
+
+  &--align {
+    min-width: 0;
+
+    > div {
+      width: 100%;
+    }
+
+    .TextToggle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
   }
 }
 
