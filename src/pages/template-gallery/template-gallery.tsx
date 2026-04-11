@@ -1,12 +1,15 @@
 import { useNavigate } from 'react-router-dom';
 import { Box, Flex, Arrange, Stack, Text } from '@flodesk/grain';
-import { useBuilderStore } from '@/store/builder-store';
+import { materializeTemplate, useBuilderStore } from '@/store/builder-store';
 import { TemplateCard } from './template-card';
 
-export function TemplateGallery() {
+export const TemplateGallery = () => {
   const navigate = useNavigate();
   const templateMap = useBuilderStore((s) => s.templateMap);
-  const templates = Object.values(templateMap);
+  const templates = Object.values(templateMap).flatMap((template) => {
+    const materialized = materializeTemplate(template);
+    return materialized ? [materialized] : [];
+  });
 
   return (
     <Flex direction="column" className="template-gallery" width="100%">
@@ -52,4 +55,4 @@ export function TemplateGallery() {
       </Box>
     </Flex>
   );
-}
+};

@@ -61,12 +61,12 @@ Scenarios:
 - Section, column, and element render/export order follows array order.
 - `updatePageSettings` updates only the targeted template.
 - `updateElementSettings` updates only the targeted leaf element.
-- `updateTextLikeData` updates:
+- `updateTextData` updates:
   - `text.data.text`
   - `heading.data.text`
   - `button.data.label`
   - optional `button.data.href`
-- `updateTextLikeData` sanitizes edited text fields and does not preserve script injection.
+- `updateTextData` sanitizes edited text fields and does not preserve script injection.
 - `updateImageData` updates image metadata such as `data.alt`, `data.decorative`, `data.width`, and `data.height`.
 - `updateElementImage` stores a data URL in `image.data.src` and marks upload state as expected.
 - `resetTemplate` restores original seeded values.

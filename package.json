@@ -13,6 +13,7 @@
     "@floating-ui/react-dom-interactions": "^0.13.3",
     "@flodesk/grain": "^11.75.0",
     "@headlessui/react": "^1.7.17",
+    "immer": "^11.1.4",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-router-dom": "^7.14.0",

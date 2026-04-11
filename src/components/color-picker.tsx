@@ -6,7 +6,7 @@ interface ColorPickerProps {
   label?: string;
 }
 
-export function ColorPicker({ value, onChange, label }: ColorPickerProps) {
+export const ColorPicker = ({ value, onChange, label }: ColorPickerProps) => {
   const hexValue = value.replace('#', '');
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -40,4 +40,4 @@ export function ColorPicker({ value, onChange, label }: ColorPickerProps) {
       </Arrange>
     </Stack>
   );
-}
+};

@@ -1,19 +1,23 @@
 import { Button, IconDownload } from '@flodesk/grain';
-import type { Template } from '@/types/template';
+import { materializeTemplate, useBuilderStore } from '@/store/builder-store';
 import { downloadHtml } from '@/utils/export-to-html';
 
 interface ExportButtonProps {
-  template: Template;
+  templateId: string;
 }
 
-export function ExportButton({ template }: ExportButtonProps) {
-  return (
-    <Button
-      variant="accent"
-      icon={<IconDownload />}
-      onClick={() => downloadHtml(template)}
-    >
-      Export
-    </Button>
-  );
-}
+/** Reads template in `onClick` so edits do not re-render this button. */
+export const ExportButton = ({ templateId }: ExportButtonProps) => (
+  <Button
+    variant="accent"
+    icon={<IconDownload />}
+    onClick={() => {
+      const template = materializeTemplate(
+        useBuilderStore.getState().templateMap[templateId],
+      );
+      if (template) downloadHtml(template);
+    }}
+  >
+    Export
+  </Button>
+);

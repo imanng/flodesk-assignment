@@ -252,7 +252,7 @@ Actions:
 - `selectElement(elementId)` -- sets `selectedElementId`
 - `updatePageSettings(templateId, patch)` -- merges partial page settings into `templateMap[templateId]`
 - `updateElementSettings(templateId, elementId, patch)` -- walks `sections` (and `columns` when present) to merge partial settings into the matching leaf element
-- `updateTextLikeData(templateId, elementId, patch)` -- walks `sections` / `columns`, sanitizes plain text fields, then stores updates for text / heading / button elements (`data.text`, `data.label`, optional `data.href`)
+- `updateTextData(templateId, elementId, patch)` -- walks `sections` / `columns`, sanitizes plain text fields, then stores updates for text / heading / button elements (`data.text`, `data.label`, optional `data.href`)
 - `updateImageData(templateId, elementId, patch)` -- updates image metadata fields like `data.alt`, `data.decorative`, `data.width`, `data.height`
 - `updateElementImage(templateId, elementId, file: File)` -- reads file via `FileReader.readAsDataURL()`, then stores the base64 data URL in `image.data.src` and marks `sourceType: 'upload'`
 - `resetTemplate(templateId)` -- re-seeds a single template from the original constants (reset to defaults)

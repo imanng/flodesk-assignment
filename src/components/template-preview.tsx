@@ -1,43 +1,49 @@
 import type { CSSProperties } from 'react';
 import type { Template, TemplateSection, TemplateColumn } from '@/types/template';
 import { FONT_STACKS } from '@/constants/font-presets';
+import { Arrange, Box, Flex } from '@flodesk/grain';
+
 import { ElementRenderer } from './element-renderer';
 
-interface TemplatePreviewProps {
-  template: Template;
+interface PreviewColumnProps {
+  col: TemplateColumn;
   selectedElementId?: string | null;
-  isInteractive?: boolean;
+  isInteractive: boolean;
   onSelectElement?: (id: string) => void;
-  onDeselectAll?: () => void;
 }
 
-function renderColumn(
-  col: TemplateColumn,
-  selectedElementId: string | null | undefined,
-  isInteractive: boolean,
-  onSelectElement?: (id: string) => void,
-) {
-  return (
-    <div key={col.id} style={{ display: 'flex', flexDirection: 'column' }}>
-      {col.elements.map((el) => (
-        <ElementRenderer
-          key={el.id}
-          element={el}
-          isSelected={selectedElementId === el.id}
-          isInteractive={isInteractive}
-          onClick={onSelectElement}
-        />
-      ))}
-    </div>
-  );
+const PreviewColumn = ({
+  col,
+  selectedElementId,
+  isInteractive,
+  onSelectElement,
+}: PreviewColumnProps) => (
+  <Flex direction="column">
+    {col.elements.map((el) => (
+      <ElementRenderer
+        key={el.id}
+        element={el}
+        isSelected={selectedElementId === el.id}
+        isInteractive={isInteractive}
+        onClick={onSelectElement}
+      />
+    ))}
+  </Flex>
+);
+
+interface PreviewSectionProps {
+  section: TemplateSection;
+  selectedElementId?: string | null;
+  isInteractive: boolean;
+  onSelectElement?: (id: string) => void;
 }
 
-function renderSection(
-  section: TemplateSection,
-  selectedElementId: string | null | undefined,
-  isInteractive: boolean,
-  onSelectElement?: (id: string) => void,
-) {
+export const TemplatePreviewSection = ({
+  section,
+  selectedElementId,
+  isInteractive,
+  onSelectElement,
+}: PreviewSectionProps) => {
   const sectionStyle: CSSProperties = {
     padding: section.settings.padding,
     backgroundColor: section.settings.backgroundColor || 'transparent',
@@ -46,24 +52,27 @@ function renderSection(
 
   if (section.layout === 'columns' && section.columns) {
     return (
-      <div key={section.id} style={sectionStyle}>
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: `repeat(${section.columns.length}, minmax(0, 1fr))`,
-            gap: section.gap,
-          }}
+      <Flex direction="column" style={sectionStyle}>
+        <Arrange
+          columns={`repeat(${section.columns.length}, minmax(0, 1fr))`}
+          gap={section.gap}
         >
-          {section.columns.map((col) =>
-            renderColumn(col, selectedElementId, isInteractive, onSelectElement),
-          )}
-        </div>
-      </div>
+          {section.columns.map((col) => (
+            <PreviewColumn
+              key={col.id}
+              col={col}
+              selectedElementId={selectedElementId}
+              isInteractive={isInteractive}
+              onSelectElement={onSelectElement}
+            />
+          ))}
+        </Arrange>
+      </Flex>
     );
   }
 
   return (
-    <div key={section.id} style={sectionStyle}>
+    <Box style={sectionStyle}>
       {section.elements?.map((el) => (
         <ElementRenderer
           key={el.id}
@@ -73,17 +82,25 @@ function renderSection(
           onClick={onSelectElement}
         />
       ))}
-    </div>
+    </Box>
   );
+};
+
+interface TemplatePreviewProps {
+  template: Template;
+  selectedElementId?: string | null;
+  isInteractive?: boolean;
+  onSelectElement?: (id: string) => void;
+  onDeselectAll?: () => void;
 }
 
-export function TemplatePreview({
+export const TemplatePreview = ({
   template,
   selectedElementId,
   isInteractive = false,
   onSelectElement,
   onDeselectAll,
-}: TemplatePreviewProps) {
+}: TemplatePreviewProps) => {
   const pageStyle: CSSProperties = {
     backgroundColor: template.pageSettings.backgroundColor,
     fontFamily: FONT_STACKS[template.pageSettings.fontPreset],
@@ -99,14 +116,20 @@ export function TemplatePreview({
   };
 
   return (
-    <div
+    <Box
       className="template-preview"
       style={pageStyle}
       onClick={handleBackgroundClick}
     >
-      {template.sections.map((section) =>
-        renderSection(section, selectedElementId, isInteractive, onSelectElement),
-      )}
-    </div>
+      {template.sections.map((section) => (
+        <TemplatePreviewSection
+          key={section.id}
+          section={section}
+          selectedElementId={selectedElementId}
+          isInteractive={isInteractive}
+          onSelectElement={onSelectElement}
+        />
+      ))}
+    </Box>
   );
-}
+};

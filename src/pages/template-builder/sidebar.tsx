@@ -1,55 +1,41 @@
 import { Box, Stack, Text } from '@flodesk/grain';
-import type { Template, TemplateElement } from '@/types/template';
+import type { TemplateElement } from '@/types/template';
+import { selectTemplateElement, useBuilderStore } from '@/store/builder-store';
 import { PageSettings } from './page-settings';
 import { ElementSettings } from './element-settings';
 
 interface SidebarProps {
-  template: Template;
-  selectedElementId: string | null;
+  templateId: string;
 }
 
-function findElement(
-  template: Template,
-  elementId: string,
-): TemplateElement | undefined {
-  for (const section of template.sections) {
-    if (section.elements) {
-      const found = section.elements.find((el) => el.id === elementId);
-      if (found) return found;
-    }
-    if (section.columns) {
-      for (const col of section.columns) {
-        const found = col.elements.find((el) => el.id === elementId);
-        if (found) return found;
-      }
-    }
-  }
-  return undefined;
-}
+const getSettingsTitle = (elementType?: TemplateElement['type']): string => {
+  if (!elementType) return 'Page Settings';
+  return `${elementType.charAt(0).toUpperCase()}${elementType.slice(1)} Settings`;
+};
 
-function getSettingsTitle(element?: TemplateElement): string {
-  if (!element) return 'Page Settings';
-  return `${element.type.charAt(0).toUpperCase()}${element.type.slice(1)} Settings`;
-}
-
-export function Sidebar({ template, selectedElementId }: SidebarProps) {
-  const selectedElement = selectedElementId
-    ? findElement(template, selectedElementId)
-    : undefined;
+export const Sidebar = ({ templateId }: SidebarProps) => {
+  const selectedElementId = useBuilderStore((s) => s.selectedElementId);
+  const selectedElementType = useBuilderStore((s) =>
+    selectTemplateElement(s, templateId, s.selectedElementId)?.type,
+  );
 
   return (
     <Stack className="sidebar" backgroundColor="background" borderSide="left" overflowY="auto">
       <Box paddingX="l" paddingY="m" borderSide="bottom">
         <Text size="m" weight="medium">
-          {getSettingsTitle(selectedElement)}
+          {getSettingsTitle(selectedElementType)}
         </Text>
       </Box>
 
-      {selectedElement ? (
-        <ElementSettings element={selectedElement} templateId={template.id} />
+      {selectedElementId ? (
+        <ElementSettings
+          key={selectedElementId}
+          elementId={selectedElementId}
+          templateId={templateId}
+        />
       ) : (
-        <PageSettings template={template} />
+        <PageSettings templateId={templateId} />
       )}
     </Stack>
   );
-}
+};

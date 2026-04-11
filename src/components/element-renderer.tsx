@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import type { CSSProperties, JSX } from 'react';
 import type { TemplateElement, ElementSettings } from '@/types/template';
 
 interface ElementRendererProps {
@@ -8,7 +8,7 @@ interface ElementRendererProps {
   onClick?: (id: string) => void;
 }
 
-function settingsToStyle(settings: ElementSettings): CSSProperties {
+const settingsToStyle = (settings: ElementSettings): CSSProperties => {
   const style: CSSProperties = {
     fontSize: settings.fontSize,
     color: settings.color,
@@ -23,14 +23,14 @@ function settingsToStyle(settings: ElementSettings): CSSProperties {
   if (settings.lineHeight) style.lineHeight = settings.lineHeight;
 
   return style;
-}
+};
 
-export function ElementRenderer({
+export const ElementRenderer = ({
   element,
   isSelected = false,
   isInteractive = false,
   onClick,
-}: ElementRendererProps) {
+}: ElementRendererProps) => {
   const style = settingsToStyle(element.settings);
   const className = [
     'element-renderer',
@@ -74,7 +74,7 @@ export function ElementRenderer({
           style={{ textAlign: style.textAlign, padding: style.padding }}
           onClick={handleClick}
         >
-          <span
+          <button
             style={{
               display: 'inline-block',
               fontSize: style.fontSize,
@@ -89,7 +89,7 @@ export function ElementRenderer({
             }}
           >
             {element.data.label}
-          </span>
+          </button>
         </div>
       );
 
@@ -126,4 +126,4 @@ export function ElementRenderer({
     default:
       return null;
   }
-}
+};
