@@ -98,11 +98,13 @@ const normalizeTemplateMap = (
     return buildTemplateMap(TEMPLATES);
   }
 
-  const map: Record<string, BuilderTemplate> = {};
-  for (const [templateId, template] of Object.entries(templateMap)) {
-    map[templateId] = normalizeTemplate(template);
-  }
-  return map;
+  return Object.entries(templateMap).reduce<Record<string, BuilderTemplate>>(
+    (map, [templateId, template]) => {
+      map[templateId] = normalizeTemplate(template);
+      return map;
+    },
+    {},
+  );
 };
 
 export const materializeTemplate = (
