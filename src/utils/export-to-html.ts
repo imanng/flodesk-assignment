@@ -1,13 +1,14 @@
+import { FONT_STACKS } from "@/constants/font-presets";
 import type {
+  ElementSettings,
   Template,
+  TemplateColumn,
   TemplateElement,
   TemplateSection,
-  TemplateColumn,
-  ElementSettings,
 } from "@/types/template";
-import { FONT_STACKS } from "@/constants/font-presets";
+import { sanitizeHtmlForExport } from "@/utils/sanitize";
 
-function cssFromSettings(settings: ElementSettings): string {
+const cssFromSettings = (settings: ElementSettings): string => {
   const parts: string[] = [
     `font-size: ${settings.fontSize}`,
     `color: ${settings.color}`,
@@ -28,40 +29,31 @@ function cssFromSettings(settings: ElementSettings): string {
   if (settings.lineHeight) parts.push(`line-height: ${settings.lineHeight}`);
 
   return parts.join("; ");
-}
+};
 
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/\n/g, "<br>");
-}
-
-function elementToHtml(el: TemplateElement): string {
+const elementToHtml = (el: TemplateElement): string => {
   const style = cssFromSettings(el.settings);
 
   switch (el.type) {
     case "heading": {
       const tag = `h${el.data.level}`;
-      return `<${tag} style="${style}">${escapeHtml(el.data.text)}</${tag}>`;
+      return `<${tag} style="${style}">${sanitizeHtmlForExport(el.data.text, "body")}</${tag}>`;
     }
 
     case "text":
-      return `<p style="${style}; white-space: pre-line;">${escapeHtml(el.data.text)}</p>`;
+      return `<p style="${style}">${sanitizeHtmlForExport(el.data.text, "body")}</p>`;
 
     case "button": {
       const href = el.data.href || "#";
       const target = el.data.target || "_self";
       const wrapperStyle = `text-align: ${el.settings.textAlign}; padding: ${el.settings.padding}`;
       const btnStyle = `display: inline-block; font-size: ${el.settings.fontSize}; color: ${el.settings.color}; background-color: ${el.settings.backgroundColor}; padding: ${el.settings.padding}; border-radius: ${el.settings.borderRadius || "0"}; font-weight: ${el.settings.fontWeight === "medium" ? "500" : el.settings.fontWeight || "normal"}; text-decoration: none; border: none; cursor: pointer`;
-      return `<div style="${wrapperStyle}"><a href="${href}" target="${target}" style="${btnStyle}">${escapeHtml(el.data.label)}</a></div>`;
+      return `<div style="${wrapperStyle}"><a href="${href}" target="${target}" style="${btnStyle}">${sanitizeHtmlForExport(el.data.label, "body")}</a></div>`;
     }
 
     case "image": {
       const imgStyle = `display: block; width: 100%; height: auto; border-radius: ${el.settings.borderRadius || "0"}; object-fit: cover`;
-      return `<div style="padding: ${el.settings.padding}"><img src="${el.data.src}" alt="${escapeHtml(el.data.alt)}" style="${imgStyle}" /></div>`;
+      return `<div style="padding: ${el.settings.padding}"><img src="${el.data.src}" alt="${sanitizeHtmlForExport(el.data.alt, "attribute")}" style="${imgStyle}" /></div>`;
     }
 
     case "divider":
@@ -70,13 +62,12 @@ function elementToHtml(el: TemplateElement): string {
     default:
       return "";
   }
-}
+};
 
-function columnToHtml(col: TemplateColumn): string {
-  return `<div style="display: flex; flex-direction: column;">${col.elements.map(elementToHtml).join("\n")}</div>`;
-}
+const columnToHtml = (col: TemplateColumn): string =>
+  `<div style="display: flex; flex-direction: column;">${col.elements.map(elementToHtml).join("\n")}</div>`;
 
-function sectionToHtml(section: TemplateSection): string {
+const sectionToHtml = (section: TemplateSection): string => {
   const sectionStyle = [
     `padding: ${section.settings.padding}`,
     section.settings.backgroundColor
@@ -96,9 +87,9 @@ function sectionToHtml(section: TemplateSection): string {
 
   const elements = section.elements?.map(elementToHtml).join("\n") ?? "";
   return `<div style="${sectionStyle}">${elements}</div>`;
-}
+};
 
-export function exportToHtml(template: Template): string {
+export const exportToHtml = (template: Template): string => {
   const fontStack = FONT_STACKS[template.pageSettings.fontPreset];
   const bodyContent = template.sections.map(sectionToHtml).join("\n");
 
@@ -107,7 +98,7 @@ export function exportToHtml(template: Template): string {
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>${escapeHtml(template.name)}</title>
+      <title>${sanitizeHtmlForExport(template.name, "title")}</title>
       <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: ${fontStack}; background-color: ${template.pageSettings.backgroundColor}; }
@@ -121,9 +112,9 @@ export function exportToHtml(template: Template): string {
     </body>
     </html>
   `;
-}
+};
 
-export function downloadHtml(template: Template): void {
+export const downloadHtml = (template: Template): void => {
   const html = exportToHtml(template);
   const blob = new Blob([html], { type: "text/html" });
   const url = URL.createObjectURL(blob);
@@ -135,4 +126,4 @@ export function downloadHtml(template: Template): void {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
-}
+};

@@ -1,5 +1,6 @@
 import type { CSSProperties, JSX } from 'react';
-import type { TemplateElement, ElementSettings } from '@/types/template';
+
+import type { ElementSettings,TemplateElement } from '@/types/template';
 
 interface ElementRendererProps {
   element: TemplateElement;

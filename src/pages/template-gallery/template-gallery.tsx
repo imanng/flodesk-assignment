@@ -1,6 +1,8 @@
+import { Arrange, Box, Flex, Stack, Text } from '@flodesk/grain';
 import { useNavigate } from 'react-router-dom';
-import { Box, Flex, Arrange, Stack, Text } from '@flodesk/grain';
+
 import { materializeTemplate, useBuilderStore } from '@/store/builder-store';
+
 import { TemplateCard } from './template-card';
 
 export const TemplateGallery = () => {
@@ -12,9 +14,8 @@ export const TemplateGallery = () => {
   });
 
   return (
-    <Flex direction="column" className="template-gallery" width="100%">
+    <Flex direction="column" width="100%" minHeight="100vh">
       <Arrange
-        className="template-gallery__header"
         paddingX="l"
         borderSide="bottom"
         backgroundColor="background"
@@ -22,17 +23,22 @@ export const TemplateGallery = () => {
         columns="1fr auto"
         width="100%"
         height={7}
+        minHeight={7}
       >
-        <img src="/logo.svg" alt="Flodesk" className="template-gallery__logo" />
+        <img src="/logo.svg" alt="Flodesk" style={{ height: 32, width: 'auto' }} />
       </Arrange>
 
       <Box
-        className="template-gallery__content"
         backgroundColor="background2"
         padding="xxl"
         flex="1"
+        width="100%"
       >
-        <Box className="template-gallery__container" maxWidth="1100px" margin="0 auto">
+        <Box
+          maxWidth="1100px"
+          margin="0 auto"
+          width="100%"
+        >
           <Stack gap="xs" marginBottom="xl">
             <Text size="xxl" weight="medium" align="center">
               Choose a template

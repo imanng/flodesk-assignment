@@ -1,6 +1,7 @@
 import { Box, Card, Stack, Text } from '@flodesk/grain';
-import type { Template } from '@/types/template';
+
 import { TemplatePreview } from '@/components/template-preview';
+import type { Template } from '@/types/template';
 
 interface TemplateCardProps {
   template: Template;
@@ -9,9 +10,10 @@ interface TemplateCardProps {
 
 export const TemplateCard = ({ template, onClick }: TemplateCardProps) => (
   <Card
-    className="template-gallery__card"
     borderSide="all"
+    backgroundColor="background"
     cursor="pointer"
+    height="100%"
     shadowHover="m"
     transition="fast"
     padding={0}
@@ -19,7 +21,13 @@ export const TemplateCard = ({ template, onClick }: TemplateCardProps) => (
     radius="m"
     onClick={onClick}
   >
-    <Box className="template-gallery__card-preview" overflow="hidden" borderSide="bottom" flex="1" height={40}>
+    <Box
+      position="relative"
+      overflow="hidden"
+      borderSide="bottom"
+      flex="1"
+      height={40}
+    >
       <Box className="template-gallery__card-preview-inner">
         <TemplatePreview template={template} />
       </Box>

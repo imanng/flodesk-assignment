@@ -1,6 +1,16 @@
+import {
+  Arrange,
+  Button,
+  Flex,
+  IconArrowLeft,
+  IconReset,
+  Text,
+  TextButton,
+} from '@flodesk/grain';
 import { useNavigate } from 'react-router-dom';
-import { Flex, Arrange, Text, TextButton, IconArrowLeft } from '@flodesk/grain';
-import { useBuilderStore } from '@/store/builder-store';
+
+import { selectTemplateName, useBuilderStore } from '@/store/builder-store';
+
 import { ExportButton } from './export-button';
 
 export interface TemplateBuilderHeaderProps {
@@ -10,7 +20,8 @@ export interface TemplateBuilderHeaderProps {
 export const TemplateBuilderHeader = ({ templateId }: TemplateBuilderHeaderProps) => {
   const navigate = useNavigate();
   const selectElement = useBuilderStore((s) => s.selectElement);
-  const templateName = useBuilderStore((s) => s.templateMap[templateId]?.name);
+  const resetTemplate = useBuilderStore((s) => s.resetTemplate);
+  const templateName = useBuilderStore((state) => selectTemplateName(state, templateId));
 
   return (
     <Arrange
@@ -36,7 +47,15 @@ export const TemplateBuilderHeader = ({ templateId }: TemplateBuilderHeaderProps
 
       <Text weight="medium" size="l" hasEllipsis>{templateName}</Text>
 
-      <Flex justifyContent="end">
+      <Flex justifyContent="end" alignItems="center" gap="s">
+        <Button
+          type="button"
+          variant="neutral"
+          icon={<IconReset />}
+          onClick={() => resetTemplate(templateId)}
+        >
+          Load defaults
+        </Button>
         <ExportButton templateId={templateId} />
       </Flex>
     </Arrange>

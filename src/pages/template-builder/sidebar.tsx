@@ -1,8 +1,10 @@
-import { Box, Stack, Text } from '@flodesk/grain';
+import { Arrange, Stack, Text } from '@flodesk/grain';
+
+import { selectElementType, useBuilderStore } from '@/store/builder-store';
 import type { TemplateElement } from '@/types/template';
-import { selectTemplateElement, useBuilderStore } from '@/store/builder-store';
-import { PageSettings } from './page-settings';
+
 import { ElementSettings } from './element-settings';
+import { PageSettings } from './page-settings';
 
 interface SidebarProps {
   templateId: string;
@@ -15,17 +17,28 @@ const getSettingsTitle = (elementType?: TemplateElement['type']): string => {
 
 export const Sidebar = ({ templateId }: SidebarProps) => {
   const selectedElementId = useBuilderStore((s) => s.selectedElementId);
-  const selectedElementType = useBuilderStore((s) =>
-    selectTemplateElement(s, templateId, s.selectedElementId)?.type,
+  const selectedElementType = useBuilderStore((state) =>
+    selectElementType(state, templateId, state.selectedElementId),
   );
 
   return (
-    <Stack className="sidebar" backgroundColor="background" borderSide="left" overflowY="auto">
-      <Box paddingX="l" paddingY="m" borderSide="bottom">
-        <Text size="m" weight="medium">
-          {getSettingsTitle(selectedElementType)}
-        </Text>
-      </Box>
+    <Stack
+      backgroundColor="background"
+      borderSide="left"
+      overflowY="auto"
+      width="320px"
+      minWidth="320px"
+      height="100%"
+    >
+      <Arrange
+        columns="1fr"
+        alignItems="center"
+        paddingX="l"
+        borderSide="bottom"
+        height={7}
+      >
+        <Text weight="medium" size="l" hasEllipsis>{getSettingsTitle(selectedElementType)}</Text>
+      </Arrange>
 
       {selectedElementId ? (
         <ElementSettings

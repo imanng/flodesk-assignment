@@ -12,46 +12,7 @@ body,
   height: 100%;
 }
 
-.app {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
 // ─── Template Gallery ───────────────────────────────────────────────────────
-
-.template-gallery {
-  min-height: 100vh;
-}
-
-.template-gallery__header {
-  height: 56px;
-  min-height: 56px;
-}
-
-.template-gallery__logo {
-  height: 32px;
-  width: auto;
-}
-
-.template-gallery__content {
-  width: 100%;
-}
-
-.template-gallery__container {
-  width: 100%;
-}
-
-.template-gallery__card {
-  cursor: pointer;
-  height: 100%;
-  background-color: var(--grn-color-background);
-}
-
-.template-gallery__card-preview {
-  position: relative;
-  height: 320px;
-}
 
 .template-gallery__card-preview-inner {
   transform: scale(0.32);
@@ -59,34 +20,6 @@ body,
   pointer-events: none;
   width: 312.5%; // 100% / 0.32
   min-height: 1000px;
-}
-
-// ─── Template Builder ───────────────────────────────────────────────────────
-
-.template-builder {
-  height: 100%;
-}
-
-.template-builder__body {
-  overflow: hidden;
-}
-
-.template-builder__preview {
-  flex: 1;
-  height: 100%;
-}
-
-.template-builder__preview-canvas {
-  max-width: 100%;
-  margin: 0 auto;
-}
-
-// ─── Sidebar ────────────────────────────────────────────────────────────────
-
-.sidebar {
-  width: 320px;
-  min-width: 320px;
-  height: 100%;
 }
 
 // ─── Element Renderer ───────────────────────────────────────────────────────

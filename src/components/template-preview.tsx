@@ -1,7 +1,8 @@
-import type { CSSProperties } from 'react';
-import type { Template, TemplateSection, TemplateColumn } from '@/types/template';
-import { FONT_STACKS } from '@/constants/font-presets';
 import { Arrange, Box, Flex } from '@flodesk/grain';
+import type { CSSProperties } from 'react';
+
+import { FONT_STACKS } from '@/constants/font-presets';
+import type { Template, TemplateColumn,TemplateSection } from '@/types/template';
 
 import { ElementRenderer } from './element-renderer';
 
@@ -117,7 +118,6 @@ export const TemplatePreview = ({
 
   return (
     <Box
-      className="template-preview"
       style={pageStyle}
       onClick={handleBackgroundClick}
     >

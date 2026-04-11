@@ -1,8 +1,14 @@
-import { useCallback } from 'react';
 import { Box } from '@flodesk/grain';
-import { useBuilderStore } from '@/store/builder-store';
+import { useCallback } from 'react';
+
 import { TemplatePreviewSection } from '@/components/template-preview';
 import { FONT_STACKS } from '@/constants/font-presets';
+import {
+  selectPageSettings,
+  selectTemplateSection,
+  selectTemplateSectionOrder,
+  useBuilderStore,
+} from '@/store/builder-store';
 
 interface PreviewProps {
   templateId: string;
@@ -23,8 +29,8 @@ const ConnectedPreviewSection = ({
   isInteractive,
   onSelectElement,
 }: ConnectedPreviewSectionProps) => {
-  const section = useBuilderStore(
-    (s) => s.templateMap[templateId]?.sectionById[sectionId],
+  const section = useBuilderStore((state) =>
+    selectTemplateSection(state, templateId, sectionId),
   );
 
   if (!section) return null;
@@ -40,8 +46,12 @@ const ConnectedPreviewSection = ({
 };
 
 export const Preview = ({ templateId }: PreviewProps) => {
-  const pageSettings = useBuilderStore((s) => s.templateMap[templateId]?.pageSettings);
-  const sectionOrder = useBuilderStore((s) => s.templateMap[templateId]?.sectionOrder);
+  const pageSettings = useBuilderStore((state) =>
+    selectPageSettings(state, templateId),
+  );
+  const sectionOrder = useBuilderStore((state) =>
+    selectTemplateSectionOrder(state, templateId),
+  );
   const selectedElementId = useBuilderStore((s) => s.selectedElementId);
   const selectElement = useBuilderStore((s) => s.selectElement);
 
@@ -61,18 +71,20 @@ export const Preview = ({ templateId }: PreviewProps) => {
 
   return (
     <Box
-      className="template-builder__preview"
       backgroundColor="background2"
       overflow="auto"
       padding="xl"
+      flex="1"
+      height="100%"
       onClick={onDeselectAll}
     >
       <Box
         shadow="m"
         radius="m"
         overflow="hidden"
-        className="template-builder__preview-canvas"
         backgroundColor="background"
+        maxWidth="100%"
+        margin="0 auto"
         style={pageStyle}
       >
         {sectionOrder.map((sectionId) => (

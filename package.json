@@ -1,5 +1,5 @@
 {
-  "name": "my-react-app",
+  "name": "page-builder",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -10,9 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@floating-ui/react-dom-interactions": "^0.13.3",
     "@flodesk/grain": "^11.75.0",
-    "@headlessui/react": "^1.7.17",
     "immer": "^11.1.4",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
@@ -29,6 +27,7 @@
     "eslint": "^9.39.4",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.5.2",
+    "eslint-plugin-simple-import-sort": "^13.0.0",
     "globals": "^17.4.0",
     "sass": "^1.99.0",
     "typescript": "^6.0.2",

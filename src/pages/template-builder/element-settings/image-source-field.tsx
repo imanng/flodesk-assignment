@@ -1,26 +1,32 @@
-import { useState } from 'react';
 import {
-  Stack,
-  Text,
-  TextInput,
   Arrange,
   Box,
   Button,
-  Popover,
+  FieldLabel,
   IconLink,
   IconUpload,
+  Popover,
+  Stack,
+  TextInput,
 } from '@flodesk/grain';
-import { useBuilderStore } from '@/store/builder-store';
-import { sanitizeImageUrlForImgSrc } from '@/utils/sanitize';
-import type { ElementFieldProps } from '@/types/form';
-import { useElementSelector } from '@/hooks/use-element-selector';
+import { useState } from 'react';
 
-export const ImageSourceFields = ({ templateId, elementId }: ElementFieldProps) => {
+import {
+  type ElementBuilderSettingsProps,
+  SettingsField,
+} from '@/components/form';
+import { useBuilderActions } from '@/hooks/use-builder-actions';
+import { useElementSelector } from '@/hooks/use-element-selector';
+import { sanitizeImageUrlForImgSrc } from '@/utils/sanitize';
+
+export const ImageSourceField = ({
+  templateId,
+  elementId,
+}: ElementBuilderSettingsProps) => {
   const src = useElementSelector(templateId, elementId, (element) =>
     element?.type === 'image' ? element.data.src : '',
   );
-  const updateImageData = useBuilderStore((s) => s.updateImageData);
-  const updateElementImage = useBuilderStore((s) => s.updateElementImage);
+  const { updateElementData, updateElementImage } = useBuilderActions();
   const [urlOpen, setUrlOpen] = useState(false);
   const [urlDraft, setUrlDraft] = useState(src);
 
@@ -28,7 +34,7 @@ export const ImageSourceFields = ({ templateId, elementId }: ElementFieldProps) 
     const safe = sanitizeImageUrlForImgSrc(urlDraft);
     if (!safe) return;
 
-    updateImageData(templateId, elementId, {
+    updateElementData(templateId, elementId, {
       src: safe,
       source: 'url',
     });
@@ -36,13 +42,17 @@ export const ImageSourceFields = ({ templateId, elementId }: ElementFieldProps) 
   };
 
   return (
-    <Stack gap="xs">
-      <Text size="s" weight="medium" color="content2">Image</Text>
+    <SettingsField label="Image">
       <Box borderSide="all" radius="s" overflow="hidden">
         <img
           src={src}
           alt=""
-          style={{ width: '100%', height: '120px', display: 'block', objectFit: 'contain' }}
+          style={{
+            width: '100%',
+            height: '120px',
+            display: 'block',
+            objectFit: 'contain',
+          }}
         />
       </Box>
       <Arrange columns="repeat(2, 1fr)" gap="s">
@@ -67,11 +77,11 @@ export const ImageSourceFields = ({ templateId, elementId }: ElementFieldProps) 
           )}
         >
           <Stack gap="m">
-            <Text size="s" weight="medium">Image URL</Text>
+            <FieldLabel htmlFor={`image-url-${elementId}`}>Image URL</FieldLabel>
             <TextInput
               id={`image-url-${elementId}`}
               value={urlDraft}
-              onChange={(e) => setUrlDraft(e.target.value)}
+              onChange={(event) => setUrlDraft(event.target.value)}
             />
             <Arrange gap="s" justifyContent="end">
               <Button variant="neutral" type="button" onClick={() => setUrlOpen(false)}>
@@ -101,6 +111,6 @@ export const ImageSourceFields = ({ templateId, elementId }: ElementFieldProps) 
           Upload
         </Button>
       </Arrange>
-    </Stack>
+    </SettingsField>
   );
 };

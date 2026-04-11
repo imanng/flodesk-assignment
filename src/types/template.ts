@@ -1,7 +1,7 @@
 export interface ElementSettings {
   fontSize: string;
   color: string;
-  textAlign: 'left' | 'center' | 'right';
+  textAlign: "left" | "center" | "right";
   padding: string;
   backgroundColor: string;
   borderRadius?: string;
@@ -10,8 +10,12 @@ export interface ElementSettings {
   lineHeight?: string;
 }
 
-export type FontPreset = 'modern-sans' | 'editorial-serif' | 'classic-serif' | 'mono';
-export type ElementType = 'heading' | 'text' | 'image' | 'button' | 'divider';
+export type FontPreset =
+  | "modern-sans"
+  | "editorial-serif"
+  | "classic-serif"
+  | "mono";
+export type ElementType = "heading" | "text" | "image" | "button" | "divider";
 
 export interface BaseElement<T extends ElementType, D> {
   id: string;
@@ -20,40 +24,52 @@ export interface BaseElement<T extends ElementType, D> {
   data: D;
 }
 
-export type TextElement = BaseElement<'text', {
-  text: string;
-}>;
+export type TextElement = BaseElement<
+  "text",
+  {
+    text: string;
+  }
+>;
 
-export type HeadingElement = BaseElement<'heading', {
-  text: string;
-  level: 1 | 2 | 3;
-}>;
+export type HeadingElement = BaseElement<
+  "heading",
+  {
+    text: string;
+    level: 1 | 2 | 3;
+  }
+>;
 
-export type ButtonElement = BaseElement<'button', {
-  label: string;
-  href?: string;
-  target?: '_self' | '_blank';
-}>;
+export type ButtonElement = BaseElement<
+  "button",
+  {
+    label: string;
+    href?: string;
+    target?: "_self" | "_blank";
+  }
+>;
 
-export type ImageSource = 'url' | 'upload';
+export type ImageSource = "url" | "upload";
 
-export const DEFAULT_IMAGE_SOURCE: ImageSource = 'url';
+export const DEFAULT_IMAGE_SOURCE: ImageSource = "url";
 
-export function getImageSource(data: { source?: ImageSource }): ImageSource {
+export const getImageSource = (data: { source?: ImageSource }): ImageSource => {
   return data.source ?? DEFAULT_IMAGE_SOURCE;
-}
+};
 
-export type ImageElement = BaseElement<'image', {
-  src: string;
-  alt: string;
-  decorative?: boolean;
-  width?: number;
-  height?: number;
-  /** How `src` was set. Omitted means {@link DEFAULT_IMAGE_SOURCE}. */
-  source?: ImageSource;
-}>;
+export type ImageElement = BaseElement<
+  "image",
+  {
+    src: string;
+    alt: string;
+    decorative?: boolean;
+    width?: number;
+    height?: number;
+    /** How `src` was set. Omitted means {@link DEFAULT_IMAGE_SOURCE}. */
+    source?: ImageSource;
+  }
+>;
 
-export type DividerElement = BaseElement<'divider', Record<string, never>>;
+export type DividerElement = BaseElement<"divider", Record<string, never>>;
 
 export type TemplateElement =
   | TextElement
@@ -75,7 +91,7 @@ export interface TemplateColumn {
 
 export interface TemplateSection {
   id: string;
-  layout: 'stack' | 'columns';
+  layout: "stack" | "columns";
   gap: string;
   settings: SectionSettings;
   elements?: TemplateElement[];

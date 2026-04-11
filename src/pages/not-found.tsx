@@ -1,5 +1,5 @@
-import { useNavigate } from 'react-router-dom';
 import { Flex, Text, TextButton } from '@flodesk/grain';
+import { useNavigate } from 'react-router-dom';
 
 export interface NotFoundProps {
   title?: string;
@@ -15,7 +15,6 @@ export const NotFound = ({
   return (
     <Flex
       direction="column"
-      className="not-found"
       width="100%"
       minHeight="100vh"
       justifyContent="center"

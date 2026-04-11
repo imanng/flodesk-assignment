@@ -1,30 +1,21 @@
 import { Stack } from '@flodesk/grain';
-import { useBuilderStore } from '@/store/builder-store';
-import {
-  BackgroundColorField,
-  FieldSeparator,
-  MaxWidthField,
-  TypographyField,
-} from './fields';
 
-interface PageSettingsProps {
-  templateId: string;
-}
+import { type PageBuilderSettingsProps,SettingsSections } from '@/components/form';
+import { usePageSelector } from '@/hooks/use-page-selector';
 
-export const PageSettings = ({ templateId }: PageSettingsProps) => {
-  const hasPageSettings = useBuilderStore((state) =>
-    Boolean(state.templateMap[templateId]?.pageSettings),
+import { PAGE_SETTINGS_SECTIONS } from './schema';
+
+export const PageSettings = ({ templateId }: PageBuilderSettingsProps) => {
+  const hasPageSettings = usePageSelector(
+    templateId,
+    (pageSettings) => Boolean(pageSettings),
   );
 
   if (!hasPageSettings) return null;
 
   return (
-    <Stack gap="l" paddingX="l" paddingY="m">
-      <BackgroundColorField templateId={templateId} />
-      <FieldSeparator />
-      <TypographyField templateId={templateId} />
-      <FieldSeparator />
-      <MaxWidthField templateId={templateId} />
+    <Stack gap="l" paddingX="l" paddingY="m" width="100%">
+      <SettingsSections sections={PAGE_SETTINGS_SECTIONS} props={{ templateId }} />
     </Stack>
   );
 };

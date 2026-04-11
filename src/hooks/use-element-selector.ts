@@ -1,5 +1,5 @@
-import type { TemplateElement } from '@/types/template';
 import { selectTemplateElement, useBuilderStore } from '@/store/builder-store';
+import type { TemplateElement } from '@/types/template';
 
 export const useElementSelector = <T,>(
   templateId: string,

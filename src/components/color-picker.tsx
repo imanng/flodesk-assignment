@@ -1,4 +1,4 @@
-import { Stack, Arrange, Text, GhostInput } from '@flodesk/grain';
+import { Arrange, FieldLabel, GhostInput,Stack } from '@flodesk/grain';
 
 interface ColorPickerProps {
   value: string;
@@ -22,9 +22,7 @@ export const ColorPicker = ({ value, onChange, label }: ColorPickerProps) => {
 
   return (
     <Stack gap="xs">
-      {label && (
-        <Text size="s" color="content2">{label}</Text>
-      )}
+      {label ? <FieldLabel>{label}</FieldLabel> : null}
       <Arrange gap="s" alignItems="center">
         <input
           type="color"

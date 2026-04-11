@@ -1,22 +1,22 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
+
+import { TEMPLATES } from "@/constants/templates";
 import type {
-  Template,
-  PageSettings,
   ElementSettings,
+  PageSettings,
+  Template,
   TemplateElement,
   TemplateSection,
 } from "@/types/template";
-import { TEMPLATES } from "@/constants/templates";
 import { sanitizeContent } from "@/utils/sanitize";
 
 const STORAGE_KEY = "builder-store";
-const STORE_VERSION = 2;
 
 interface BuilderTemplate extends Omit<Template, "sections"> {
   sectionOrder: string[];
-  sectionById: Record<string, TemplateSection>;
+  sectionMap: Record<string, TemplateSection>;
 }
 
 interface BuilderState {
@@ -33,12 +33,7 @@ interface BuilderState {
     elementId: string,
     patch: Partial<ElementSettings>,
   ) => void;
-  updateTextData: (
-    templateId: string,
-    elementId: string,
-    patch: Record<string, unknown>,
-  ) => void;
-  updateImageData: (
+  updateElementData: (
     templateId: string,
     elementId: string,
     patch: Record<string, unknown>,
@@ -56,33 +51,27 @@ type PersistedBuilderState = Pick<
   "templateMap" | "selectedElementId"
 >;
 
-interface LegacyPersistedBuilderState {
-  templateMap?: Record<string, Template>;
-  selectedElementId?: string | null;
-}
-
-function isBuilderTemplate(
+const isBuilderTemplate = (
   template: Template | BuilderTemplate,
-): template is BuilderTemplate {
-  return "sectionById" in template && "sectionOrder" in template;
-}
+): template is BuilderTemplate =>
+  "sectionMap" in template && "sectionOrder" in template;
 
-function normalizeTemplate(
+const normalizeTemplate = (
   template: Template | BuilderTemplate,
-): BuilderTemplate {
+): BuilderTemplate => {
   if (isBuilderTemplate(template)) {
-    const { sectionOrder, sectionById, ...rest } = template;
+    const { sectionOrder, sectionMap, ...rest } = template;
     return normalizeTemplate({
       ...rest,
       sections: sectionOrder
-        .map((sectionId) => sectionById[sectionId])
+        .map((sectionId) => sectionMap[sectionId])
         .filter(Boolean) as TemplateSection[],
     });
   }
 
   const cloned = structuredClone(template);
   const sectionOrder = cloned.sections.map((section) => section.id);
-  const sectionById = Object.fromEntries(
+  const sectionMap = Object.fromEntries(
     cloned.sections.map((section) => [section.id, section]),
   ) as Record<string, TemplateSection>;
 
@@ -90,27 +79,21 @@ function normalizeTemplate(
   return {
     ...rest,
     sectionOrder,
-    sectionById,
+    sectionMap,
   };
-}
+};
 
-export function materializeTemplate(
-  template?: BuilderTemplate,
-): Template | undefined {
-  if (!template) return undefined;
+const buildTemplateMap = (
+  templates: Template[],
+): Record<string, BuilderTemplate> =>
+  templates.reduce<Record<string, BuilderTemplate>>((map, template) => {
+    map[template.id] = normalizeTemplate(template);
+    return map;
+  }, {});
 
-  const { sectionOrder, sectionById, ...rest } = template;
-  return structuredClone({
-    ...rest,
-    sections: sectionOrder
-      .map((sectionId) => sectionById[sectionId])
-      .filter(Boolean) as TemplateSection[],
-  });
-}
-
-function normalizeTemplateMap(
+const normalizeTemplateMap = (
   templateMap?: Record<string, Template | BuilderTemplate>,
-): Record<string, BuilderTemplate> {
+): Record<string, BuilderTemplate> => {
   if (!templateMap || Object.keys(templateMap).length === 0) {
     return buildTemplateMap(TEMPLATES);
   }
@@ -120,22 +103,26 @@ function normalizeTemplateMap(
     map[templateId] = normalizeTemplate(template);
   }
   return map;
-}
+};
 
-function buildTemplateMap(
-  templates: Template[],
-): Record<string, BuilderTemplate> {
-  const map: Record<string, BuilderTemplate> = {};
-  for (const template of templates) {
-    map[template.id] = normalizeTemplate(template);
-  }
-  return map;
-}
+export const materializeTemplate = (
+  template?: BuilderTemplate,
+): Template | undefined => {
+  if (!template) return undefined;
 
-function findElementInSection(
+  const { sectionOrder, sectionMap, ...rest } = template;
+  return structuredClone({
+    ...rest,
+    sections: sectionOrder
+      .map((sectionId) => sectionMap[sectionId])
+      .filter(Boolean) as TemplateSection[],
+  });
+};
+
+const findElementInSection = (
   section: TemplateSection,
   elementId: string,
-): TemplateElement | undefined {
+): TemplateElement | undefined => {
   if (section.elements) {
     return section.elements.find((el) => el.id === elementId);
   }
@@ -148,14 +135,14 @@ function findElementInSection(
   }
 
   return undefined;
-}
+};
 
-function findElementInTemplate(
+const findElementInTemplate = (
   template: BuilderTemplate,
   elementId: string,
-): TemplateElement | undefined {
+): TemplateElement | undefined => {
   for (const sectionId of template.sectionOrder) {
-    const section = template.sectionById[sectionId];
+    const section = template.sectionMap[sectionId];
     if (!section) continue;
 
     const found = findElementInSection(section, elementId);
@@ -163,20 +150,70 @@ function findElementInTemplate(
   }
 
   return undefined;
-}
+};
 
-export function selectTemplateElement(
+const selectBuilderTemplate = (
+  state: Pick<BuilderState, "templateMap">,
+  templateId: string,
+): BuilderTemplate | undefined => state.templateMap[templateId];
+
+export const selectMaterializedTemplate = (
+  state: Pick<BuilderState, "templateMap">,
+  templateId: string,
+): Template | undefined =>
+  materializeTemplate(selectBuilderTemplate(state, templateId));
+
+export const selectHasTemplate = (
+  state: Pick<BuilderState, "templateMap">,
+  templateId: string | undefined,
+): boolean => {
+  if (!templateId) return false;
+  return Boolean(selectBuilderTemplate(state, templateId));
+};
+
+export const selectTemplateName = (
+  state: Pick<BuilderState, "templateMap">,
+  templateId: string,
+): string | undefined => selectBuilderTemplate(state, templateId)?.name;
+
+export const selectPageSettings = (
+  state: Pick<BuilderState, "templateMap">,
+  templateId: string,
+): PageSettings | undefined =>
+  selectBuilderTemplate(state, templateId)?.pageSettings;
+
+export const selectTemplateSectionOrder = (
+  state: Pick<BuilderState, "templateMap">,
+  templateId: string,
+): string[] | undefined =>
+  selectBuilderTemplate(state, templateId)?.sectionOrder;
+
+export const selectTemplateSection = (
+  state: Pick<BuilderState, "templateMap">,
+  templateId: string,
+  sectionId: string,
+): TemplateSection | undefined =>
+  selectBuilderTemplate(state, templateId)?.sectionMap[sectionId];
+
+export const selectTemplateElement = (
   state: Pick<BuilderState, "templateMap">,
   templateId: string,
   elementId: string | null,
-): TemplateElement | undefined {
+): TemplateElement | undefined => {
   if (!elementId) return undefined;
 
-  const template = state.templateMap[templateId];
+  const template = selectBuilderTemplate(state, templateId);
   if (!template) return undefined;
 
   return findElementInTemplate(template, elementId);
-}
+};
+
+export const selectElementType = (
+  state: Pick<BuilderState, "templateMap">,
+  templateId: string,
+  elementId: string | null,
+): TemplateElement["type"] | undefined =>
+  selectTemplateElement(state, templateId, elementId)?.type;
 
 export const useBuilderStore = create<BuilderState>()(
   persist(
@@ -207,7 +244,7 @@ export const useBuilderStore = create<BuilderState>()(
           Object.assign(element.settings, patch);
         }),
 
-      updateTextData: (templateId, elementId, patch) =>
+      updateElementData: (templateId, elementId, patch) =>
         set((draft) => {
           const template = draft.templateMap[templateId];
           if (!template) return;
@@ -224,17 +261,6 @@ export const useBuilderStore = create<BuilderState>()(
           if (!element) return;
 
           Object.assign(element.data, sanitizedPatch);
-        }),
-
-      updateImageData: (templateId, elementId, patch) =>
-        set((draft) => {
-          const template = draft.templateMap[templateId];
-          if (!template) return;
-
-          const element = findElementInTemplate(template, elementId);
-          if (!element || element.type !== "image") return;
-
-          Object.assign(element.data, patch);
         }),
 
       updateElementImage: (templateId, elementId, file) => {
@@ -264,12 +290,9 @@ export const useBuilderStore = create<BuilderState>()(
     })),
     {
       name: STORAGE_KEY,
-      version: STORE_VERSION,
+      version: 1,
       migrate: (persistedState) => {
-        const state = persistedState as
-          | PersistedBuilderState
-          | LegacyPersistedBuilderState
-          | undefined;
+        const state = persistedState as PersistedBuilderState | undefined;
 
         return {
           templateMap: normalizeTemplateMap(state?.templateMap),

@@ -1,11 +1,12 @@
 import { useParams } from 'react-router-dom';
-import { useBuilderStore } from '@/store/builder-store';
-import { TemplateBuilder } from '@/pages/template-builder';
+
 import { NotFound } from '@/pages/not-found';
+import { TemplateBuilder } from '@/pages/template-builder';
+import { selectHasTemplate, useBuilderStore } from '@/store/builder-store';
 
 export const TemplateBuilderGuard = () => {
   const { id } = useParams<{ id: string }>();
-  const hasTemplate = useBuilderStore((s) => (id ? Boolean(s.templateMap[id]) : false));
+  const hasTemplate = useBuilderStore((state) => selectHasTemplate(state, id));
 
   if (!hasTemplate) {
     return (
