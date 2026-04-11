@@ -1,5 +1,5 @@
 import { Flex } from '@flodesk/grain';
-import { Route,Routes } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 
 import { TemplateBuilderGuard } from './components/template-builder-guard';
 import { NotFound } from './pages/not-found';

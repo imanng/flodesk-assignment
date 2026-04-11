@@ -73,7 +73,7 @@ export const Preview = ({ templateId }: PreviewProps) => {
     <Box
       backgroundColor="background2"
       overflow="auto"
-      padding="xl"
+      padding="l"
       flex="1"
       height="100%"
       onClick={onDeselectAll}

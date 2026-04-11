@@ -14,7 +14,7 @@ export const TemplateGallery = () => {
   });
 
   return (
-    <Flex direction="column" width="100%" minHeight="100vh">
+    <Flex direction="column" width="100%" minHeight="100vh" wrap="nowrap">
       <Arrange
         paddingX="l"
         borderSide="bottom"
@@ -30,7 +30,7 @@ export const TemplateGallery = () => {
 
       <Box
         backgroundColor="background2"
-        padding="xxl"
+        padding="l"
         flex="1"
         width="100%"
       >

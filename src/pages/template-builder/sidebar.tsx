@@ -26,8 +26,10 @@ export const Sidebar = ({ templateId }: SidebarProps) => {
       backgroundColor="background"
       borderSide="left"
       overflowY="auto"
-      width="320px"
-      minWidth="320px"
+      width={{
+        default: '320px',
+        mobile: '100%',
+      }}
       height="100%"
     >
       <Arrange

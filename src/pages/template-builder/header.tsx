@@ -47,7 +47,7 @@ export const TemplateBuilderHeader = ({ templateId }: TemplateBuilderHeaderProps
 
       <Text weight="medium" size="l" hasEllipsis>{templateName}</Text>
 
-      <Flex justifyContent="end" alignItems="center" gap="s">
+      <Flex justifyContent="end" alignItems="center" gap="s" wrap="nowrap">
         <Button
           type="button"
           variant="neutral"
