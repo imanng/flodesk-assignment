@@ -46,11 +46,6 @@ type BuilderState = {
   resetTemplate: (templateId: string) => void;
 };
 
-type PersistedBuilderState = Pick<
-  BuilderState,
-  "templateMap" | "selectedElementId"
->;
-
 const isBuilderTemplate = (
   template: Template | BuilderTemplate,
 ): template is BuilderTemplate =>
@@ -90,22 +85,6 @@ const buildTemplateMap = (
     map[template.id] = normalizeTemplate(template);
     return map;
   }, {});
-
-const normalizeTemplateMap = (
-  templateMap?: Record<string, Template | BuilderTemplate>,
-): Record<string, BuilderTemplate> => {
-  if (!templateMap || Object.keys(templateMap).length === 0) {
-    return buildTemplateMap(TEMPLATES);
-  }
-
-  return Object.entries(templateMap).reduce<Record<string, BuilderTemplate>>(
-    (map, [templateId, template]) => {
-      map[templateId] = normalizeTemplate(template);
-      return map;
-    },
-    {},
-  );
-};
 
 export const materializeTemplate = (
   template?: BuilderTemplate,
@@ -292,18 +271,9 @@ export const useBuilderStore = create<BuilderState>()(
     })),
     {
       name: STORAGE_KEY,
-      version: 1,
-      migrate: (persistedState) => {
-        const state = persistedState as PersistedBuilderState | undefined;
 
-        return {
-          templateMap: normalizeTemplateMap(state?.templateMap),
-          selectedElementId: state?.selectedElementId ?? null,
-        };
-      },
       partialize: (state) => ({
         templateMap: state.templateMap,
-        selectedElementId: state.selectedElementId,
       }),
     },
   ),
