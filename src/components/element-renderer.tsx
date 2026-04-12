@@ -1,6 +1,6 @@
-import type { CSSProperties, JSX } from 'react';
+import { type CSSProperties, type JSX, memo } from 'react';
 
-import type { ElementSettings,TemplateElement } from '@/types/template';
+import type { ElementSettings, TemplateElement } from '@/types/template';
 
 type ElementRendererProps = {
   element: TemplateElement;
@@ -26,7 +26,7 @@ const settingsToStyle = (settings: ElementSettings): CSSProperties => {
   return style;
 };
 
-export const ElementRenderer = ({
+export const ElementRenderer = memo(({
   element,
   isSelected = false,
   isInteractive = false,
@@ -127,4 +127,4 @@ export const ElementRenderer = ({
     default:
       return null;
   }
-};
+});

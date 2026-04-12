@@ -1,5 +1,6 @@
 import { Arrange, Box, Flex } from '@flodesk/grain';
 import type { CSSProperties } from 'react';
+import { memo } from 'react';
 
 import { FONT_STACKS } from '@/constants/font-presets';
 import { selectIsElementSelected, useBuilderStore } from '@/store/builder-store';
@@ -19,7 +20,7 @@ type PreviewElementProps = {
   onSelectElement?: (id: string) => void;
 };
 
-const PreviewElement = ({
+const PreviewElement = memo(({
   element,
   templateId,
   isInteractive,
@@ -37,7 +38,7 @@ const PreviewElement = ({
       onClick={onSelectElement}
     />
   );
-};
+});
 
 type PreviewColumnProps = {
   col: TemplateColumn;
