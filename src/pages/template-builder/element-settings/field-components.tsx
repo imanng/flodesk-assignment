@@ -158,6 +158,7 @@ export const FontSizeField = ({
       max={72}
       value={parsePx(fontSize, 12)}
       displayValue={fontSize}
+      width={3}
       onChange={(value) =>
         updateElementSettings(templateId, elementId, {
           fontSize: `${value}px`,
@@ -283,6 +284,7 @@ export const BorderRadiusField = ({
       max={32}
       value={parsePx(borderRadius, 0)}
       displayValue={borderRadius}
+      width={3}
       onChange={(value) =>
         updateElementSettings(templateId, elementId, {
           borderRadius: `${value}px`,

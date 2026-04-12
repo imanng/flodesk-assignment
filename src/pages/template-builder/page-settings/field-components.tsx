@@ -68,6 +68,7 @@ export const PageMaxWidthField = ({ templateId }: PageBuilderSettingsProps) => {
       step={20}
       value={parsePx(maxWidth, 800)}
       displayValue={maxWidth}
+      width={4.5}
       onChange={(value) =>
         updatePageSettings(templateId, { maxWidth: `${value}px` })
       }

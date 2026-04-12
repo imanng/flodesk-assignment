@@ -1,4 +1,5 @@
 import {
+  Arrange,
   Box,
   FieldLabel,
   Select,
@@ -130,6 +131,7 @@ type SettingsSliderControlProps = {
   step?: number;
   value: number;
   displayValue: string;
+  width?: string | number;
   onChange: (value: number) => void;
 };
 
@@ -141,25 +143,30 @@ export const SettingsSliderControl = ({
   step,
   value,
   displayValue,
+  width = 'auto',
   onChange,
 }: SettingsSliderControlProps) => {
   const clampedValue = clampNumber(value, min, max);
 
   return (
     <SettingsField label={label} htmlFor={id}>
-      <Slider
-        id={id}
-        min={min}
-        max={max}
-        step={step}
-        value={clampedValue}
-        onChange={(event) =>
-          onChange(event.target.valueAsNumber)
-        }
-      />
-      <Text size="s" color="content3">
-        {displayValue}
-      </Text>
+      <Arrange gap="s" columns="1fr auto">
+        <Slider
+          id={id}
+          min={min}
+          max={max}
+          step={step}
+          value={clampedValue}
+          onChange={(event) =>
+            onChange(event.target.valueAsNumber)
+          }
+        />
+        <Box width={width}>
+          <Text size="s" color="content3" align="right">
+            {displayValue}
+          </Text>
+        </Box>
+      </Arrange>
     </SettingsField>
   );
 };
