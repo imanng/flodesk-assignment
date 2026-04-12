@@ -121,7 +121,7 @@ const portfolio: Template = {
             textAlign: "center",
             padding: "14px 32px 14px 32px",
             backgroundColor: "#1a1a1a",
-            borderRadius: "999px",
+            borderRadius: "32px",
           },
           data: { label: "Get in Touch", href: "#", target: "_self" },
         },

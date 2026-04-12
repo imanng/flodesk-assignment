@@ -1,37 +1,38 @@
-import sanitizeHtml from "sanitize-html";
+import DOMPurify from "dompurify";
 
-const SANITIZE_CONFIG: sanitizeHtml.IOptions = {
-  allowedTags: ["b", "i", "em", "strong", "br", "u", "span"],
-  allowedAttributes: {},
-  disallowedTagsMode: "discard",
-};
+export type ExportEscapeKind = "body" | "title" | "attribute";
 
-/** No tags: plain text safe for static HTML export (see sanitize-html escaping rules). */
-const EXPORT_CONFIG: sanitizeHtml.IOptions = {
-  allowedTags: [],
-  allowedAttributes: {},
-  disallowedTagsMode: "discard",
-};
+const escapeHtml = (raw: string): string =>
+  raw
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
 
-export type SanitizeExportKind = "body" | "title" | "attribute";
-
-export const sanitizeHtmlForExport = (
+export const escapeHtmlForExport = (
   raw: string,
-  kind: SanitizeExportKind,
+  kind: ExportEscapeKind,
 ): string => {
-  const base = sanitizeHtml(raw, EXPORT_CONFIG);
   switch (kind) {
     case "body":
-      return base.replace(/\n/g, "<br />");
+      return escapeHtml(raw).replace(/\r?\n/g, "<br />");
     case "title":
-      return base.replace(/\s+/g, " ").trim();
+      return escapeHtml(raw).replace(/\s+/g, " ").trim();
     case "attribute":
-      return base;
+      return escapeHtml(raw);
   }
 };
 
-export const sanitizeContent = (dirty: string): string => {
-  return sanitizeHtml(dirty, SANITIZE_CONFIG);
+export const sanitizeExportDocument = (html: string): string => {
+  const sanitized = DOMPurify.sanitize(html, {
+    ADD_ATTR: ["target"],
+    WHOLE_DOCUMENT: true,
+  });
+
+  return sanitized.toLowerCase().startsWith("<!doctype html>")
+    ? sanitized
+    : `<!DOCTYPE html>\n${sanitized}`;
 };
 
 // Validate image URL for use in img src attribute

@@ -12,6 +12,7 @@ import {
 import { HEADING_LEVEL_OPTIONS, TARGET_OPTIONS } from '@/constants/element-settings';
 import { useBuilderActions } from '@/hooks/use-builder-actions';
 import { useElementSelector } from '@/hooks/use-element-selector';
+import { clampNumber } from '@/utils/clamp';
 import { formatSpacing, parsePx, parseSpacing, type SpacingSides } from '@/utils/parse-px';
 
 type TextContentFieldProps = ElementBuilderSettingsProps & {
@@ -72,11 +73,10 @@ export const ButtonLabelField = ({
   const { updateElementData } = useBuilderActions();
 
   return (
-    <SettingsTextAreaControl
+    <SettingsTextInputControl
       id={`label-${elementId}`}
       label="Label"
       value={label}
-      rows={3}
       onChange={(value) => updateElementData(templateId, elementId, { label: value })}
     />
   );
@@ -245,7 +245,7 @@ export const PaddingField = ({
         id={`padding-${side}-${elementId}`}
         min={0}
         max={64}
-        value={value}
+        value={clampNumber(value, 0, 64)}
         onChange={(event) => updatePaddingSide(side, event.target.valueAsNumber)}
       />
       <Text size="s" color="content3">

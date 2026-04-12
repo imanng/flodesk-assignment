@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { FONT_STACKS } from '@/constants/font-presets';
 import { TEMPLATES } from '@/constants/templates';
 import type {
+  ButtonElement,
   HeadingElement,
   ImageElement,
   Template,
@@ -46,6 +47,7 @@ describe('exportToHtml', () => {
     expect(html).toContain('<h1');
     expect(html).toContain('<p');
     expect(html).toContain('<a href="#" target="_self"');
+    expect(html).toContain('<style>');
     expect(html).toContain('<img src="data:image/png;base64,ZmFrZS1pbWFnZQ=="');
     expect(html).toContain('<hr');
     expect(html).not.toContain('fonts.googleapis.com');
@@ -59,12 +61,13 @@ describe('exportToHtml', () => {
     expect(html).toContain('display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px');
   });
 
-  it('sanitizes exported text content into safe body HTML', () => {
+  it('preserves raw text in exported content by escaping it into safe HTML', () => {
     const portfolio = TEMPLATES[0];
     expect(portfolio).toBeDefined();
     const template = structuredClone(portfolio as Template);
     const heroHeading = findElementById(template, 'hero-heading');
     const aboutText = findElementById(template, 'about-text');
+    const ctaButton = findElementById(template, 'cta-button');
 
     expect(heroHeading, 'portfolio fixture must include hero-heading').toBeDefined();
     expect(heroHeading!.type).toBe('heading');
@@ -72,18 +75,52 @@ describe('exportToHtml', () => {
     expect(aboutText, 'portfolio fixture must include about-text').toBeDefined();
     expect(aboutText!.type).toBe('text');
 
+    expect(ctaButton, 'portfolio fixture must include cta-button').toBeDefined();
+    expect(ctaButton!.type).toBe('button');
+
     (heroHeading as HeadingElement).data.text =
       'Hello <img src=x onerror="alert(1)"> world';
     (aboutText as TextElement).data.text =
       'Line one\n<script>alert(1)</script>Line two';
+    (ctaButton as ButtonElement).data.label =
+      'Click <span onclick="alert(1)">me</span>';
 
     const html = exportToHtml(template);
 
-    expect(html).not.toContain('<script');
-    expect(html).not.toContain('onerror');
-    // Tag stripped; spacing depends on sanitize-html output — allow one or more spaces
-    expect(html).toMatch(/Hello\s+world/);
-    expect(html).toContain('Line one<br />');
-    expect(html).toContain('Line two');
+    expect(html).toContain(
+      'Hello &lt;img src=x onerror="alert(1)"&gt; world',
+    );
+    expect(html).toContain(
+      'Line one<br>&lt;script&gt;alert(1)&lt;/script&gt;Line two',
+    );
+    expect(html).toContain(
+      'Click &lt;span onclick="alert(1)"&gt;me&lt;/span&gt;',
+    );
+    expect(html).not.toContain('<script>alert(1)</script>');
+    expect(html).not.toContain('<span onclick="alert(1)">me</span>');
+  });
+
+  it('sanitizes generated export HTML with DOMPurify before returning it', () => {
+    const portfolio = TEMPLATES[0];
+    expect(portfolio).toBeDefined();
+    const template = structuredClone(portfolio as Template);
+    const ctaButton = findElementById(template, 'cta-button');
+    const aboutImage = findElementById(template, 'about-image');
+
+    expect(ctaButton, 'portfolio fixture must include cta-button').toBeDefined();
+    expect(ctaButton!.type).toBe('button');
+
+    expect(aboutImage, 'portfolio fixture must include about-image').toBeDefined();
+    expect(aboutImage!.type).toBe('image');
+
+    (ctaButton as ButtonElement).data.href = 'javascript:alert(1)';
+    (aboutImage as ImageElement).data.alt = '" onerror="alert(1)';
+
+    const html = exportToHtml(template);
+
+    expect(html).toContain('<!DOCTYPE html>');
+    expect(html).not.toContain('href="javascript:alert(1)"');
+    expect(html).toContain('<a target="_self"');
+    expect(html).toContain('alt="&quot; onerror=&quot;alert(1)"');
   });
 });

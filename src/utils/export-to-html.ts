@@ -6,7 +6,10 @@ import type {
   TemplateElement,
   TemplateSection,
 } from "@/types/template";
-import { sanitizeHtmlForExport } from "@/utils/sanitize";
+import {
+  escapeHtmlForExport,
+  sanitizeExportDocument,
+} from "@/utils/sanitize";
 
 const cssFromSettings = (settings: ElementSettings): string => {
   const parts: string[] = [
@@ -37,23 +40,23 @@ const elementToHtml = (el: TemplateElement): string => {
   switch (el.type) {
     case "heading": {
       const tag = `h${el.data.level}`;
-      return `<${tag} style="${style}">${sanitizeHtmlForExport(el.data.text, "body")}</${tag}>`;
+      return `<${tag} style="${style}">${escapeHtmlForExport(el.data.text, "body")}</${tag}>`;
     }
 
     case "text":
-      return `<p style="${style}">${sanitizeHtmlForExport(el.data.text, "body")}</p>`;
+      return `<p style="${style}">${escapeHtmlForExport(el.data.text, "body")}</p>`;
 
     case "button": {
       const href = el.data.href || "#";
       const target = el.data.target || "_self";
       const wrapperStyle = `text-align: ${el.settings.textAlign}; padding: ${el.settings.padding}`;
       const btnStyle = `display: inline-block; font-size: ${el.settings.fontSize}; color: ${el.settings.color}; background-color: ${el.settings.backgroundColor}; padding: ${el.settings.padding}; border-radius: ${el.settings.borderRadius || "0"}; font-weight: ${el.settings.fontWeight === "medium" ? "500" : el.settings.fontWeight || "normal"}; text-decoration: none; border: none; cursor: pointer`;
-      return `<div style="${wrapperStyle}"><a href="${href}" target="${target}" style="${btnStyle}">${sanitizeHtmlForExport(el.data.label, "body")}</a></div>`;
+      return `<div style="${wrapperStyle}"><a href="${href}" target="${target}" style="${btnStyle}">${escapeHtmlForExport(el.data.label, "body")}</a></div>`;
     }
 
     case "image": {
       const imgStyle = `display: block; width: 100%; height: auto; border-radius: ${el.settings.borderRadius || "0"}; object-fit: cover`;
-      return `<div style="padding: ${el.settings.padding}"><img src="${el.data.src}" alt="${sanitizeHtmlForExport(el.data.alt, "attribute")}" style="${imgStyle}" /></div>`;
+      return `<div style="padding: ${el.settings.padding}"><img src="${el.data.src}" alt="${escapeHtmlForExport(el.data.alt, "attribute")}" style="${imgStyle}" /></div>`;
     }
 
     case "divider":
@@ -92,13 +95,12 @@ const sectionToHtml = (section: TemplateSection): string => {
 export const exportToHtml = (template: Template): string => {
   const fontStack = FONT_STACKS[template.pageSettings.fontPreset];
   const bodyContent = template.sections.map(sectionToHtml).join("\n");
-
-  return `<!DOCTYPE html>
+  const html = `<!DOCTYPE html>
     <html lang="en">
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>${sanitizeHtmlForExport(template.name, "title")}</title>
+      <title>${escapeHtmlForExport(template.name, "title")}</title>
       <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: ${fontStack}; background-color: ${template.pageSettings.backgroundColor}; }
@@ -112,6 +114,8 @@ export const exportToHtml = (template: Template): string => {
     </body>
     </html>
   `;
+
+  return sanitizeExportDocument(html);
 };
 
 export const downloadHtml = (template: Template): void => {

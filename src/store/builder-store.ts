@@ -10,7 +10,6 @@ import type {
   TemplateElement,
   TemplateSection,
 } from "@/types/template";
-import { sanitizeContent } from "@/utils/sanitize";
 
 const STORAGE_KEY = "builder-store";
 
@@ -230,18 +229,10 @@ export const useBuilderStore = create<BuilderState>()(
           const template = draft.templateMap[templateId];
           if (!template) return;
 
-          const sanitizedPatch: Record<string, unknown> = {};
-          for (const [key, val] of Object.entries(patch)) {
-            sanitizedPatch[key] =
-              typeof val === "string" && (key === "text" || key === "label")
-                ? sanitizeContent(val)
-                : val;
-          }
-
           const element = findElementInTemplate(template, elementId);
           if (!element) return;
 
-          Object.assign(element.data, sanitizedPatch);
+          Object.assign(element.data, patch);
         }),
 
       updateElementImage: (templateId, elementId, file) => {

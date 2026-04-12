@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
+import { parsePx, parseSpacing } from '@/utils/parse-px';
+
 import { TEMPLATES } from './templates';
 
 describe('TEMPLATES', () => {
@@ -46,6 +48,41 @@ describe('TEMPLATES', () => {
             case 'divider':
               expect(element.data).toEqual({});
               break;
+          }
+        }
+      }
+    }
+  });
+
+  it('keeps slider-backed seeded values within the current UI bounds', () => {
+    for (const template of TEMPLATES) {
+      const maxWidth = parsePx(template.pageSettings.maxWidth, 800);
+      expect(maxWidth).toBeGreaterThanOrEqual(600);
+      expect(maxWidth).toBeLessThanOrEqual(1200);
+
+      for (const section of template.sections) {
+        const elements =
+          section.elements ?? section.columns?.flatMap((column) => column.elements) ?? [];
+
+        for (const element of elements) {
+          if (element.type !== 'image' && element.type !== 'divider') {
+            const fontSize = parsePx(element.settings.fontSize, 12);
+            expect(fontSize).toBeGreaterThanOrEqual(12);
+            expect(fontSize).toBeLessThanOrEqual(72);
+          }
+
+          if (element.type !== 'divider') {
+            const padding = parseSpacing(element.settings.padding, 0);
+            for (const side of Object.values(padding)) {
+              expect(side).toBeGreaterThanOrEqual(0);
+              expect(side).toBeLessThanOrEqual(64);
+            }
+          }
+
+          if (element.type === 'button' || element.type === 'image') {
+            const borderRadius = parsePx(element.settings.borderRadius, 0);
+            expect(borderRadius).toBeGreaterThanOrEqual(0);
+            expect(borderRadius).toBeLessThanOrEqual(32);
           }
         }
       }

@@ -14,6 +14,7 @@ import {
 import { type ReactNode } from 'react';
 
 import { ColorPicker } from '@/components/color-picker';
+import { clampNumber } from '@/utils/clamp';
 
 export type PageBuilderSettingsProps = {
   templateId: string;
@@ -141,23 +142,27 @@ export const SettingsSliderControl = ({
   value,
   displayValue,
   onChange,
-}: SettingsSliderControlProps) => (
-  <SettingsField label={label} htmlFor={id}>
-    <Slider
-      id={id}
-      min={min}
-      max={max}
-      step={step}
-      value={value}
-      onChange={(event) =>
-        onChange(event.target.valueAsNumber)
-      }
-    />
-    <Text size="s" color="content3">
-      {displayValue}
-    </Text>
-  </SettingsField>
-);
+}: SettingsSliderControlProps) => {
+  const clampedValue = clampNumber(value, min, max);
+
+  return (
+    <SettingsField label={label} htmlFor={id}>
+      <Slider
+        id={id}
+        min={min}
+        max={max}
+        step={step}
+        value={clampedValue}
+        onChange={(event) =>
+          onChange(event.target.valueAsNumber)
+        }
+      />
+      <Text size="s" color="content3">
+        {displayValue}
+      </Text>
+    </SettingsField>
+  );
+};
 
 type SettingsColorControlProps = {
   label: string;

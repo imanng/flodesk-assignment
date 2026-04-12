@@ -40,7 +40,7 @@ describe('useBuilderStore', () => {
     expect(untouchedHeading.settings.color).toBe('#f8fafc');
   });
 
-  it('sanitizes edited text fields and can reset seeded content', () => {
+  it('keeps raw edited text fields in state and can reset seeded content', () => {
     useBuilderStore.getState().updateElementData('portfolio', 'about-text', {
       text: 'Intro <b onclick="alert(1)">Bold</b><script>alert(1)</script>',
     });
@@ -58,11 +58,12 @@ describe('useBuilderStore', () => {
       throw new Error('Expected cta-button to be a button element');
     }
 
-    expect(textElement.data.text).toContain('<b>Bold</b>');
-    expect(textElement.data.text).not.toContain('onclick');
-    expect(textElement.data.text).not.toContain('<script');
-    expect(buttonElement.data.label).toContain('<span>me</span>');
-    expect(buttonElement.data.label).not.toContain('onmouseover');
+    expect(textElement.data.text).toBe(
+      'Intro <b onclick="alert(1)">Bold</b><script>alert(1)</script>',
+    );
+    expect(buttonElement.data.label).toBe(
+      'Click <span onmouseover="alert(1)">me</span>',
+    );
 
     useBuilderStore.getState().resetTemplate('portfolio');
 
