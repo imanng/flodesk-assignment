@@ -1,6 +1,9 @@
+import { Arrange, Slider, Stack, Text } from '@flodesk/grain';
+
 import {
   type ElementBuilderSettingsProps,
   SettingsColorControl,
+  SettingsField,
   SettingsSelectControl,
   SettingsSliderControl,
   SettingsTextAreaControl,
@@ -9,7 +12,7 @@ import {
 import { HEADING_LEVEL_OPTIONS, TARGET_OPTIONS } from '@/constants/element-settings';
 import { useBuilderActions } from '@/hooks/use-builder-actions';
 import { useElementSelector } from '@/hooks/use-element-selector';
-import { parsePx } from '@/utils/parse-px';
+import { formatSpacing, parsePx, parseSpacing, type SpacingSides } from '@/utils/parse-px';
 
 type TextContentFieldProps = ElementBuilderSettingsProps & {
   rows: number;
@@ -212,21 +215,54 @@ export const PaddingField = ({
     element?.settings.padding ?? '0px',
   );
   const { updateElementSettings } = useBuilderActions();
+  const paddingSides = parseSpacing(padding, 0);
+
+  const updatePaddingSide = (side: keyof SpacingSides, value: number) => {
+    const nextPadding = formatSpacing({
+      ...paddingSides,
+      [side]: value,
+    });
+
+    updateElementSettings(templateId, elementId, {
+      padding: nextPadding,
+    });
+  };
+
+  const renderPaddingSlider = (
+    side: keyof SpacingSides,
+    label: string,
+    value: number,
+  ) => (
+    <Arrange
+      key={side}
+      columns="56px 1fr auto"
+      gap="s"
+      alignItems="center"
+      width="100%"
+    >
+      <Text size="s">{label}</Text>
+      <Slider
+        id={`padding-${side}-${elementId}`}
+        min={0}
+        max={64}
+        value={value}
+        onChange={(event) => updatePaddingSide(side, event.target.valueAsNumber)}
+      />
+      <Text size="s" color="content3">
+        {value}px
+      </Text>
+    </Arrange>
+  );
 
   return (
-    <SettingsSliderControl
-      id={`padding-${elementId}`}
-      label="Padding"
-      min={0}
-      max={64}
-      value={parsePx(padding, 0)}
-      displayValue={padding}
-      onChange={(value) =>
-        updateElementSettings(templateId, elementId, {
-          padding: `${value}px`,
-        })
-      }
-    />
+    <SettingsField label="Padding">
+      <Stack gap="s" paddingTop="s">
+        {renderPaddingSlider('top', 'Top', paddingSides.top)}
+        {renderPaddingSlider('right', 'Right', paddingSides.right)}
+        {renderPaddingSlider('bottom', 'Bottom', paddingSides.bottom)}
+        {renderPaddingSlider('left', 'Left', paddingSides.left)}
+      </Stack>
+    </SettingsField>
   );
 };
 
