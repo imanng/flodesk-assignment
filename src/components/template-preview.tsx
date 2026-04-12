@@ -2,31 +2,64 @@ import { Arrange, Box, Flex } from '@flodesk/grain';
 import type { CSSProperties } from 'react';
 
 import { FONT_STACKS } from '@/constants/font-presets';
-import type { Template, TemplateColumn,TemplateSection } from '@/types/template';
+import { selectIsElementSelected, useBuilderStore } from '@/store/builder-store';
+import type {
+  Template,
+  TemplateColumn,
+  TemplateElement,
+  TemplateSection,
+} from '@/types/template';
 
 import { ElementRenderer } from './element-renderer';
 
+type PreviewElementProps = {
+  element: TemplateElement;
+  templateId?: string;
+  isInteractive: boolean;
+  onSelectElement?: (id: string) => void;
+};
+
+const PreviewElement = ({
+  element,
+  templateId,
+  isInteractive,
+  onSelectElement,
+}: PreviewElementProps) => {
+  const isSelected = useBuilderStore((state) =>
+    templateId ? selectIsElementSelected(state, templateId, element.id) : false,
+  );
+
+  return (
+    <ElementRenderer
+      element={element}
+      isSelected={isSelected}
+      isInteractive={isInteractive}
+      onClick={onSelectElement}
+    />
+  );
+};
+
 type PreviewColumnProps = {
   col: TemplateColumn;
-  selectedElementId?: string | null;
+  templateId?: string;
   isInteractive: boolean;
   onSelectElement?: (id: string) => void;
 };
 
 const PreviewColumn = ({
   col,
-  selectedElementId,
+  templateId,
   isInteractive,
   onSelectElement,
 }: PreviewColumnProps) => (
   <Flex direction="column">
     {col.elements.map((el) => (
-      <ElementRenderer
+      <PreviewElement
         key={el.id}
         element={el}
-        isSelected={selectedElementId === el.id}
+        templateId={templateId}
         isInteractive={isInteractive}
-        onClick={onSelectElement}
+        onSelectElement={onSelectElement}
       />
     ))}
   </Flex>
@@ -34,14 +67,14 @@ const PreviewColumn = ({
 
 type PreviewSectionProps = {
   section: TemplateSection;
-  selectedElementId?: string | null;
+  templateId?: string;
   isInteractive: boolean;
   onSelectElement?: (id: string) => void;
 };
 
 export const TemplatePreviewSection = ({
   section,
-  selectedElementId,
+  templateId,
   isInteractive,
   onSelectElement,
 }: PreviewSectionProps) => {
@@ -62,7 +95,7 @@ export const TemplatePreviewSection = ({
             <PreviewColumn
               key={col.id}
               col={col}
-              selectedElementId={selectedElementId}
+              templateId={templateId}
               isInteractive={isInteractive}
               onSelectElement={onSelectElement}
             />
@@ -75,12 +108,12 @@ export const TemplatePreviewSection = ({
   return (
     <Box style={sectionStyle}>
       {section.elements?.map((el) => (
-        <ElementRenderer
+        <PreviewElement
           key={el.id}
           element={el}
-          isSelected={selectedElementId === el.id}
+          templateId={templateId}
           isInteractive={isInteractive}
-          onClick={onSelectElement}
+          onSelectElement={onSelectElement}
         />
       ))}
     </Box>
@@ -89,7 +122,6 @@ export const TemplatePreviewSection = ({
 
 type TemplatePreviewProps = {
   template: Template;
-  selectedElementId?: string | null;
   isInteractive?: boolean;
   onSelectElement?: (id: string) => void;
   onDeselectAll?: () => void;
@@ -97,7 +129,6 @@ type TemplatePreviewProps = {
 
 export const TemplatePreview = ({
   template,
-  selectedElementId,
   isInteractive = false,
   onSelectElement,
   onDeselectAll,
@@ -125,7 +156,6 @@ export const TemplatePreview = ({
         <TemplatePreviewSection
           key={section.id}
           section={section}
-          selectedElementId={selectedElementId}
           isInteractive={isInteractive}
           onSelectElement={onSelectElement}
         />

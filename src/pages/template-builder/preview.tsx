@@ -17,7 +17,6 @@ type PreviewProps = {
 type ConnectedPreviewSectionProps = {
   templateId: string;
   sectionId: string;
-  selectedElementId: string | null;
   isInteractive: boolean;
   onSelectElement?: (id: string) => void;
 };
@@ -25,7 +24,6 @@ type ConnectedPreviewSectionProps = {
 const ConnectedPreviewSection = ({
   templateId,
   sectionId,
-  selectedElementId,
   isInteractive,
   onSelectElement,
 }: ConnectedPreviewSectionProps) => {
@@ -38,7 +36,7 @@ const ConnectedPreviewSection = ({
   return (
     <TemplatePreviewSection
       section={section}
-      selectedElementId={selectedElementId}
+      templateId={templateId}
       isInteractive={isInteractive}
       onSelectElement={onSelectElement}
     />
@@ -52,7 +50,6 @@ export const Preview = ({ templateId }: PreviewProps) => {
   const sectionOrder = useBuilderStore((state) =>
     selectTemplateSectionOrder(state, templateId),
   );
-  const selectedElementId = useBuilderStore((s) => s.selectedElementId);
   const selectElement = useBuilderStore((s) => s.selectElement);
 
   const onDeselectAll = useCallback(() => {
@@ -92,7 +89,6 @@ export const Preview = ({ templateId }: PreviewProps) => {
             key={sectionId}
             templateId={templateId}
             sectionId={sectionId}
-            selectedElementId={selectedElementId}
             isInteractive
             onSelectElement={selectElement}
           />

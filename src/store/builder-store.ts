@@ -7,6 +7,7 @@ import type {
   ElementSettings,
   PageSettings,
   Template,
+  TemplateColumn,
   TemplateElement,
   TemplateSection,
 } from "@/types/template";
@@ -109,13 +110,19 @@ const findElementInSection = (
 
   if (section.columns) {
     for (const col of section.columns) {
-      const found = col.elements.find((el) => el.id === elementId);
+      const found = findElementInColumn(col, elementId);
       if (found) return found;
     }
   }
 
   return undefined;
 };
+
+const findElementInColumn = (
+  column: TemplateColumn,
+  elementId: string,
+): TemplateElement | undefined =>
+  column.elements.find((el) => el.id === elementId);
 
 const findElementInTemplate = (
   template: BuilderTemplate,
@@ -194,6 +201,14 @@ export const selectElementType = (
   elementId: string | null,
 ): TemplateElement["type"] | undefined =>
   selectTemplateElement(state, templateId, elementId)?.type;
+
+export const selectIsElementSelected = (
+  state: Pick<BuilderState, "templateMap" | "selectedElementId">,
+  templateId: string,
+  elementId: string,
+): boolean =>
+  state.selectedElementId === elementId &&
+  Boolean(selectTemplateElement(state, templateId, elementId));
 
 export const useBuilderStore = create<BuilderState>()(
   persist(
