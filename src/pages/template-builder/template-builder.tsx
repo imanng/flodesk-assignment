@@ -1,5 +1,8 @@
 import { Flex } from '@flodesk/grain';
+import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+
+import { useBuilderStore } from '@/store/builder-store';
 
 import { TemplateBuilderHeader } from './header';
 import { Preview } from './preview';
@@ -7,6 +10,12 @@ import { Sidebar } from './sidebar';
 
 export const TemplateBuilder = () => {
   const { id } = useParams<{ id: string }>();
+  const selectElement = useBuilderStore((state) => state.selectElement);
+
+  useEffect(() => {
+    selectElement(null);
+  }, [id, selectElement]);
+
   if (!id) return null;
 
   return (

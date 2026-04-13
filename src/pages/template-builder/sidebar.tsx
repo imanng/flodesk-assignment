@@ -20,6 +20,7 @@ export const Sidebar = ({ templateId }: SidebarProps) => {
   const selectedElementType = useBuilderStore((state) =>
     selectElementType(state, templateId, state.selectedElementId),
   );
+  const activeElementId = selectedElementType ? selectedElementId : null;
 
   return (
     <Stack
@@ -42,10 +43,10 @@ export const Sidebar = ({ templateId }: SidebarProps) => {
         <Text weight="medium" size="l" hasEllipsis>{getSettingsTitle(selectedElementType)}</Text>
       </Arrange>
 
-      {selectedElementId ? (
+      {activeElementId ? (
         <ElementSettings
-          key={selectedElementId}
-          elementId={selectedElementId}
+          key={activeElementId}
+          elementId={activeElementId}
           templateId={templateId}
         />
       ) : (

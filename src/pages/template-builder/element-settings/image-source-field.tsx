@@ -2,22 +2,21 @@ import {
   Arrange,
   Box,
   Button,
-  FieldLabel,
   IconLink,
   IconUpload,
   Popover,
   Stack,
-  TextInput,
 } from '@flodesk/grain';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import {
   type ElementBuilderSettingsProps,
   SettingsField,
+  SettingsTextInputControl,
 } from '@/components/form';
 import { useBuilderActions } from '@/hooks/use-builder-actions';
 import { useElementSelector } from '@/hooks/use-element-selector';
-import { sanitizeImageUrlForImgSrc } from '@/utils/sanitize';
+import { validateImageUrl } from '@/utils/sanitize';
 
 export const ImageSourceField = ({
   templateId,
@@ -29,17 +28,18 @@ export const ImageSourceField = ({
   const { updateElementData, updateElementImage } = useBuilderActions();
   const [urlOpen, setUrlOpen] = useState(false);
   const [urlDraft, setUrlDraft] = useState(src);
-  const imageUrlErrorMessage = urlDraft && !sanitizeImageUrlForImgSrc(urlDraft)
-    ? 'Invalid URL. Please use an image URL like https://example.com/photo.jpg.'
-    : undefined;
-  const canApplyUrl = Boolean(sanitizeImageUrlForImgSrc(urlDraft));
+  const { sanitizedValue: sanitizedUrlDraft, errorMessage } = validateImageUrl(urlDraft);
+  const canApplyUrl = Boolean(sanitizedUrlDraft);
+
+  useEffect(() => {
+    setUrlDraft(src);
+  }, [src]);
 
   const applyUrl = () => {
-    const safe = sanitizeImageUrlForImgSrc(urlDraft);
-    if (!safe) return;
+    if (!sanitizedUrlDraft) return;
 
     updateElementData(templateId, elementId, {
-      src: safe,
+      src: sanitizedUrlDraft,
       source: 'url',
     });
     setUrlOpen(false);
@@ -81,14 +81,13 @@ export const ImageSourceField = ({
           )}
         >
           <Stack gap="m">
-            <FieldLabel htmlFor={`image-url-${elementId}`}>Image URL</FieldLabel>
-            <TextInput
+            <SettingsTextInputControl
               id={`image-url-${elementId}`}
+              label="Image URL"
               type="url"
               value={urlDraft}
-              hasError={Boolean(imageUrlErrorMessage)}
-              errorMessage={imageUrlErrorMessage}
-              onChange={(event) => setUrlDraft(event.target.value)}
+              errorMessage={errorMessage}
+              onChange={setUrlDraft}
             />
             <Arrange gap="s" justifyContent="end">
               <Button variant="neutral" type="button" onClick={() => setUrlOpen(false)}>

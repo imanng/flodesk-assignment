@@ -51,9 +51,10 @@ const elementToHtml = (el: TemplateElement): string => {
     case "button": {
       const href = sanitizeLinkUrlForHref(el.data.href ?? "") || "#";
       const target = el.data.target || "_self";
+      const rel = target === "_blank" ? ' rel="noopener noreferrer"' : "";
       const wrapperStyle = `text-align: ${el.settings.textAlign}; padding: ${el.settings.padding}`;
       const btnStyle = `display: inline-block; font-size: ${el.settings.fontSize}; color: ${el.settings.color}; background-color: ${el.settings.backgroundColor}; padding: ${el.settings.padding}; border-radius: ${el.settings.borderRadius || "0"}; font-weight: ${el.settings.fontWeight === "medium" ? "500" : el.settings.fontWeight || "normal"}; text-decoration: none; border: none; cursor: pointer`;
-      return `<div style="${wrapperStyle}"><a href="${href}" target="${target}" style="${btnStyle}">${escapeHtmlForExport(el.data.label, "body")}</a></div>`;
+      return `<div style="${wrapperStyle}"><a href="${href}" target="${target}"${rel} style="${btnStyle}">${escapeHtmlForExport(el.data.label, "body")}</a></div>`;
     }
 
     case "image": {

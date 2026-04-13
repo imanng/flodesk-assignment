@@ -100,6 +100,25 @@ describe('exportToHtml', () => {
     expect(html).not.toContain('<span onclick="alert(1)">me</span>');
   });
 
+  it('adds rel attributes for links that open in a new tab', () => {
+    const portfolio = TEMPLATES[0];
+    expect(portfolio).toBeDefined();
+    const template = structuredClone(portfolio as Template);
+    const ctaButton = findElementById(template, 'cta-button');
+
+    expect(ctaButton, 'portfolio fixture must include cta-button').toBeDefined();
+    expect(ctaButton!.type).toBe('button');
+
+    (ctaButton as ButtonElement).data.href = 'https://example.com';
+    (ctaButton as ButtonElement).data.target = '_blank';
+
+    const html = exportToHtml(template);
+
+    expect(html).toContain(
+      '<a href="https://example.com" target="_blank" rel="noopener noreferrer"',
+    );
+  });
+
   it('sanitizes generated export HTML with DOMPurify before returning it', () => {
     const portfolio = TEMPLATES[0];
     expect(portfolio).toBeDefined();

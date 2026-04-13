@@ -3,7 +3,8 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { resetBuilderStore } from '@/test/builder-store-helpers';
+import { getElement, resetBuilderStore } from '@/test/builder-store-helpers';
+import { INVALID_LINK_URL_MESSAGE } from '@/utils/sanitize';
 
 import { ButtonHrefField } from './field-components';
 
@@ -13,6 +14,15 @@ const renderButtonHrefField = () =>
       <ButtonHrefField templateId="portfolio" elementId="cta-button" />
     </GrainProvider>,
   );
+
+const getButtonHref = () => {
+  const buttonElement = getElement('portfolio', 'cta-button');
+  if (buttonElement.type !== 'button') {
+    throw new Error('Expected cta-button to be a button element');
+  }
+
+  return buttonElement.data.href;
+};
 
 describe('ButtonHrefField', () => {
   beforeEach(() => {
@@ -26,7 +36,36 @@ describe('ButtonHrefField', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
-  it('shows an error for invalid links and clears it for valid ones', async () => {
+  it('shows an error for empty and invalid links without updating the store', async () => {
+    const user = userEvent.setup();
+
+    renderButtonHrefField();
+
+    const input = screen.getByLabelText('Link URL');
+
+    expect(getButtonHref()).toBe('#');
+
+    await user.clear(input);
+
+    expect(screen.getByRole('alert')).toHaveTextContent(INVALID_LINK_URL_MESSAGE);
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+    expect(getButtonHref()).toBe('#');
+
+    await user.type(input, 'not a url');
+
+    expect(screen.getByRole('alert')).toHaveTextContent(INVALID_LINK_URL_MESSAGE);
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+    expect(getButtonHref()).toBe('#');
+
+    await user.clear(input);
+    await user.type(input, 'https://example.com');
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(input).not.toHaveAttribute('aria-invalid');
+    expect(getButtonHref()).toBe('https://example.com');
+  });
+
+  it('keeps the last valid value when the draft is empty', async () => {
     const user = userEvent.setup();
 
     renderButtonHrefField();
@@ -34,17 +73,8 @@ describe('ButtonHrefField', () => {
     const input = screen.getByLabelText('Link URL');
 
     await user.clear(input);
-    await user.type(input, 'not a url');
 
-    expect(screen.getByRole('alert')).toHaveTextContent(
-      'Use https://, mailto:, tel:, /path, or #anchor.',
-    );
-    expect(input).toHaveAttribute('aria-invalid', 'true');
-
-    await user.clear(input);
-    await user.type(input, 'https://example.com');
-
-    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
-    expect(input).not.toHaveAttribute('aria-invalid');
+    expect(getButtonHref()).toBe('#');
+    expect(screen.getByRole('alert')).toHaveTextContent(INVALID_LINK_URL_MESSAGE);
   });
 });

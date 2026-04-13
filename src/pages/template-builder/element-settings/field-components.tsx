@@ -1,4 +1,5 @@
 import { Arrange, Slider, Stack, Text } from '@flodesk/grain';
+import { useEffect, useState } from 'react';
 
 import {
   type ElementBuilderSettingsProps,
@@ -14,7 +15,7 @@ import { useBuilderActions } from '@/hooks/use-builder-actions';
 import { useElementSelector } from '@/hooks/use-element-selector';
 import { clampNumber } from '@/utils/clamp';
 import { formatSpacing, parsePx, parseSpacing, type SpacingSides } from '@/utils/parse-px';
-import { sanitizeLinkUrlForHref } from '@/utils/sanitize';
+import { validateLinkUrl } from '@/utils/sanitize';
 
 type TextContentFieldProps = ElementBuilderSettingsProps & {
   rows: number;
@@ -91,17 +92,29 @@ export const ButtonHrefField = ({
     element?.type === 'button' ? (element.data.href ?? '') : '',
   );
   const { updateElementData } = useBuilderActions();
-  const errorMessage = href && !sanitizeLinkUrlForHref(href)
-    ? 'Invalid URL. Please use https://, mailto:, tel:, /path, or #anchor.'
-    : undefined;
+  const [draftHref, setDraftHref] = useState(href);
+  const { errorMessage } = validateLinkUrl(draftHref);
+
+  useEffect(() => {
+    setDraftHref(href);
+  }, [href]);
+
+  const handleChange = (value: string) => {
+    setDraftHref(value);
+
+    const nextValidation = validateLinkUrl(value);
+    if (nextValidation.sanitizedValue) {
+      updateElementData(templateId, elementId, { href: nextValidation.sanitizedValue });
+    }
+  };
 
   return (
     <SettingsTextInputControl
       id={`href-${elementId}`}
       label="Link URL"
-      value={href}
+      value={draftHref}
       errorMessage={errorMessage}
-      onChange={(value) => updateElementData(templateId, elementId, { href: value })}
+      onChange={handleChange}
     />
   );
 };
