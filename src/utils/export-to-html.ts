@@ -9,6 +9,8 @@ import type {
 import {
   escapeHtmlForExport,
   sanitizeExportDocument,
+  sanitizeImageUrlForImgSrc,
+  sanitizeLinkUrlForHref,
 } from "@/utils/sanitize";
 
 const cssFromSettings = (settings: ElementSettings): string => {
@@ -47,7 +49,7 @@ const elementToHtml = (el: TemplateElement): string => {
       return `<p style="${style}">${escapeHtmlForExport(el.data.text, "body")}</p>`;
 
     case "button": {
-      const href = el.data.href || "#";
+      const href = sanitizeLinkUrlForHref(el.data.href ?? "") || "#";
       const target = el.data.target || "_self";
       const wrapperStyle = `text-align: ${el.settings.textAlign}; padding: ${el.settings.padding}`;
       const btnStyle = `display: inline-block; font-size: ${el.settings.fontSize}; color: ${el.settings.color}; background-color: ${el.settings.backgroundColor}; padding: ${el.settings.padding}; border-radius: ${el.settings.borderRadius || "0"}; font-weight: ${el.settings.fontWeight === "medium" ? "500" : el.settings.fontWeight || "normal"}; text-decoration: none; border: none; cursor: pointer`;
@@ -55,8 +57,9 @@ const elementToHtml = (el: TemplateElement): string => {
     }
 
     case "image": {
+      const src = sanitizeImageUrlForImgSrc(el.data.src) || "";
       const imgStyle = `display: block; width: 100%; height: auto; border-radius: ${el.settings.borderRadius || "0"}; object-fit: cover`;
-      return `<div style="padding: ${el.settings.padding}"><img src="${el.data.src}" alt="${escapeHtmlForExport(el.data.alt, "attribute")}" style="${imgStyle}" /></div>`;
+      return `<div style="padding: ${el.settings.padding}"><img src="${src}" alt="${escapeHtmlForExport(el.data.alt, "attribute")}" style="${imgStyle}" /></div>`;
     }
 
     case "divider":

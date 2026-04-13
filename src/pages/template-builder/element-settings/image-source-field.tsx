@@ -29,6 +29,10 @@ export const ImageSourceField = ({
   const { updateElementData, updateElementImage } = useBuilderActions();
   const [urlOpen, setUrlOpen] = useState(false);
   const [urlDraft, setUrlDraft] = useState(src);
+  const imageUrlErrorMessage = urlDraft && !sanitizeImageUrlForImgSrc(urlDraft)
+    ? 'Invalid URL. Please use an image URL like https://example.com/photo.jpg.'
+    : undefined;
+  const canApplyUrl = Boolean(sanitizeImageUrlForImgSrc(urlDraft));
 
   const applyUrl = () => {
     const safe = sanitizeImageUrlForImgSrc(urlDraft);
@@ -80,14 +84,17 @@ export const ImageSourceField = ({
             <FieldLabel htmlFor={`image-url-${elementId}`}>Image URL</FieldLabel>
             <TextInput
               id={`image-url-${elementId}`}
+              type="url"
               value={urlDraft}
+              hasError={Boolean(imageUrlErrorMessage)}
+              errorMessage={imageUrlErrorMessage}
               onChange={(event) => setUrlDraft(event.target.value)}
             />
             <Arrange gap="s" justifyContent="end">
               <Button variant="neutral" type="button" onClick={() => setUrlOpen(false)}>
                 Cancel
               </Button>
-              <Button variant="accent" type="button" onClick={applyUrl}>
+              <Button variant="accent" type="button" onClick={applyUrl} disabled={!canApplyUrl}>
                 Apply
               </Button>
             </Arrange>

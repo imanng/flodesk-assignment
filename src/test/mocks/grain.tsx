@@ -144,7 +144,19 @@ export const FieldLabel = ({
   <label htmlFor={htmlFor}>{children}</label>
 );
 
-export const TextInput = (props: ComponentPropsWithoutRef<'input'>) => <input {...props} />;
+export const TextInput = ({
+  hasError,
+  errorMessage,
+  ...props
+}: ComponentPropsWithoutRef<'input'> & {
+  hasError?: boolean;
+  errorMessage?: ReactNode;
+}) => (
+  <>
+    <input aria-invalid={hasError || undefined} {...props} />
+    {errorMessage ? <span role="alert">{errorMessage}</span> : null}
+  </>
+);
 export const GhostInput = (props: ComponentPropsWithoutRef<'input'>) => <input {...props} />;
 export const Textarea = (props: ComponentPropsWithoutRef<'textarea'>) => (
   <textarea {...props} />

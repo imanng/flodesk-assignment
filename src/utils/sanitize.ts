@@ -35,6 +35,36 @@ export const sanitizeExportDocument = (html: string): string => {
     : `<!DOCTYPE html>\n${sanitized}`;
 };
 
+const BLOCKED_PROTOCOLS = ["javascript:", "vbscript:", "data:"];
+const SAFE_LINK_PROTOCOLS = new Set(["http:", "https:", "mailto:", "tel:"]);
+
+export const sanitizeLinkUrlForHref = (input: string): string | null => {
+  const trimmed = input.trim();
+  if (!trimmed) return null;
+
+  const lower = trimmed.toLowerCase();
+  if (BLOCKED_PROTOCOLS.some((protocol) => lower.startsWith(protocol))) {
+    return null;
+  }
+
+  if (
+    trimmed.startsWith("#")
+    || trimmed.startsWith("/")
+    || trimmed.startsWith("./")
+    || trimmed.startsWith("../")
+    || trimmed.startsWith("?")
+  ) {
+    return trimmed;
+  }
+
+  try {
+    const url = new URL(trimmed);
+    return SAFE_LINK_PROTOCOLS.has(url.protocol) ? trimmed : null;
+  } catch {
+    return null;
+  }
+};
+
 // Validate image URL for use in img src attribute
 export const sanitizeImageUrlForImgSrc = (input: string): string | null => {
   const trimmed = input.trim();

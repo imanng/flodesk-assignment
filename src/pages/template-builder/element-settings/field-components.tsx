@@ -14,6 +14,7 @@ import { useBuilderActions } from '@/hooks/use-builder-actions';
 import { useElementSelector } from '@/hooks/use-element-selector';
 import { clampNumber } from '@/utils/clamp';
 import { formatSpacing, parsePx, parseSpacing, type SpacingSides } from '@/utils/parse-px';
+import { sanitizeLinkUrlForHref } from '@/utils/sanitize';
 
 type TextContentFieldProps = ElementBuilderSettingsProps & {
   rows: number;
@@ -90,12 +91,16 @@ export const ButtonHrefField = ({
     element?.type === 'button' ? (element.data.href ?? '') : '',
   );
   const { updateElementData } = useBuilderActions();
+  const errorMessage = href && !sanitizeLinkUrlForHref(href)
+    ? 'Invalid URL. Please use https://, mailto:, tel:, /path, or #anchor.'
+    : undefined;
 
   return (
     <SettingsTextInputControl
       id={`href-${elementId}`}
       label="Link URL"
       value={href}
+      errorMessage={errorMessage}
       onChange={(value) => updateElementData(templateId, elementId, { href: value })}
     />
   );

@@ -12,7 +12,7 @@ import {
   TextToggle,
   TextToggleGroup,
 } from '@flodesk/grain';
-import { type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
 import { ColorPicker } from '@/components/color-picker';
 import { clampNumber } from '@/utils/clamp';
@@ -81,6 +81,8 @@ type SettingsTextInputControlProps = {
   id: string;
   label: string;
   value: string;
+  type?: 'text' | 'url';
+  errorMessage?: string;
   onChange: (value: string) => void;
 };
 
@@ -88,12 +90,17 @@ export const SettingsTextInputControl = ({
   id,
   label,
   value,
+  type = 'text',
+  errorMessage,
   onChange,
 }: SettingsTextInputControlProps) => (
   <SettingsField label={label} htmlFor={id}>
     <TextInput
       id={id}
+      type={type}
       value={value}
+      hasError={Boolean(errorMessage)}
+      errorMessage={errorMessage}
       onChange={(event) =>
         onChange(event.target.value)
       }

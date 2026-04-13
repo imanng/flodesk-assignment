@@ -114,13 +114,16 @@ describe('exportToHtml', () => {
     expect(aboutImage!.type).toBe('image');
 
     (ctaButton as ButtonElement).data.href = 'javascript:alert(1)';
+    (aboutImage as ImageElement).data.src = 'javascript:alert(1)';
     (aboutImage as ImageElement).data.alt = '" onerror="alert(1)';
 
     const html = exportToHtml(template);
 
     expect(html).toContain('<!DOCTYPE html>');
     expect(html).not.toContain('href="javascript:alert(1)"');
-    expect(html).toContain('<a target="_self"');
+    expect(html).not.toContain('src="javascript:alert(1)"');
+    expect(html).toContain('<img src=""');
+    expect(html).toContain('<a href="#" target="_self"');
     expect(html).toContain('alt="&quot; onerror=&quot;alert(1)"');
   });
 });
