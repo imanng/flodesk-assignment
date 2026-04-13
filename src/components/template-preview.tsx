@@ -1,15 +1,20 @@
-import { Arrange, Box, Flex } from '@flodesk/grain';
-import type { CSSProperties } from 'react';
+import { Arrange, Box } from '@flodesk/grain';
+import type { ReactNode } from 'react';
 import { memo } from 'react';
 
-import { FONT_STACKS } from '@/constants/font-presets';
-import { selectIsElementSelected, useBuilderStore } from '@/store/builder-store';
-import type {
-  Template,
-  TemplateColumn,
-  TemplateElement,
-  TemplateSection,
-} from '@/types/template';
+import {
+  selectIsElementSelected,
+  selectPageSettings,
+  selectTemplateSection,
+  useBuilderStore,
+} from '@/store/builder-store';
+import type { PageSettings, Template, TemplateColumn, TemplateElement, TemplateSection } from '@/types/template';
+import {
+  getColumnsLayoutStyle,
+  getColumnStyle,
+  getPreviewPageStyle,
+  getSectionStyle,
+} from '@/utils/template-styles';
 
 import { ElementRenderer } from './element-renderer';
 
@@ -53,7 +58,7 @@ const PreviewColumn = ({
   isInteractive,
   onSelectElement,
 }: PreviewColumnProps) => (
-  <Flex direction="column">
+  <Box style={getColumnStyle()}>
     {col.elements.map((el) => (
       <PreviewElement
         key={el.id}
@@ -63,36 +68,39 @@ const PreviewColumn = ({
         onSelectElement={onSelectElement}
       />
     ))}
-  </Flex>
+  </Box>
 );
 
 type PreviewSectionProps = {
-  section: TemplateSection;
-  templateId?: string;
   isInteractive: boolean;
+  templateId?: string;
+  sectionId?: string;
+  section?: TemplateSection;
   onSelectElement?: (id: string) => void;
 };
 
-export const TemplatePreviewSection = ({
-  section,
-  templateId,
+export const TemplatePreviewSection = memo(({
   isInteractive,
   onSelectElement,
+  templateId,
+  sectionId,
+  section,
 }: PreviewSectionProps) => {
-  const sectionStyle: CSSProperties = {
-    padding: section.settings.padding,
-    backgroundColor: section.settings.backgroundColor || 'transparent',
-    borderRadius: section.settings.borderRadius,
-  };
+  const savedSection = useBuilderStore((state) =>
+    templateId && sectionId
+      ? selectTemplateSection(state, templateId, sectionId)
+      : undefined,
+  );
+  const resolvedSection = savedSection ?? section;
+  if (!resolvedSection) return null;
 
-  if (section.layout === 'columns' && section.columns) {
+  const sectionStyle = getSectionStyle(resolvedSection);
+
+  if (resolvedSection.layout === 'columns' && resolvedSection.columns) {
     return (
-      <Flex direction="column" style={sectionStyle}>
-        <Arrange
-          columns={`repeat(${section.columns.length}, minmax(0, 1fr))`}
-          gap={section.gap}
-        >
-          {section.columns.map((col) => (
+      <Box style={sectionStyle}>
+        <Arrange style={getColumnsLayoutStyle(resolvedSection.columns.length, resolvedSection.gap)}>
+          {resolvedSection.columns.map((col) => (
             <PreviewColumn
               key={col.id}
               col={col}
@@ -102,13 +110,13 @@ export const TemplatePreviewSection = ({
             />
           ))}
         </Arrange>
-      </Flex>
+      </Box>
     );
   }
 
   return (
     <Box style={sectionStyle}>
-      {section.elements?.map((el) => (
+      {resolvedSection.elements?.map((el) => (
         <PreviewElement
           key={el.id}
           element={el}
@@ -117,6 +125,32 @@ export const TemplatePreviewSection = ({
           onSelectElement={onSelectElement}
         />
       ))}
+    </Box>
+  );
+});
+
+type TemplatePreviewPageProps = {
+  onClick?: () => void;
+  templateId?: string;
+  pageSettings?: PageSettings;
+  children: ReactNode;
+};
+
+export const TemplatePreviewPage = ({
+  templateId,
+  pageSettings,
+  onClick,
+  children,
+}: TemplatePreviewPageProps) => {
+  const savedPageSettings = useBuilderStore((state) =>
+    templateId ? selectPageSettings(state, templateId) : undefined,
+  );
+  const resolvedPageSettings = savedPageSettings ?? pageSettings;
+  if (!resolvedPageSettings) return null;
+
+  return (
+    <Box style={getPreviewPageStyle(resolvedPageSettings)} onClick={onClick}>
+      {children}
     </Box>
   );
 };
@@ -134,14 +168,6 @@ export const TemplatePreview = ({
   onSelectElement,
   onDeselectAll,
 }: TemplatePreviewProps) => {
-  const pageStyle: CSSProperties = {
-    backgroundColor: template.pageSettings.backgroundColor,
-    fontFamily: FONT_STACKS[template.pageSettings.fontPreset],
-    maxWidth: template.pageSettings.maxWidth,
-    margin: '0 auto',
-    minHeight: '100%',
-  };
-
   const handleBackgroundClick = () => {
     if (isInteractive && onDeselectAll) {
       onDeselectAll();
@@ -149,8 +175,8 @@ export const TemplatePreview = ({
   };
 
   return (
-    <Box
-      style={pageStyle}
+    <TemplatePreviewPage
+      pageSettings={template.pageSettings}
       onClick={handleBackgroundClick}
     >
       {template.sections.map((section) => (
@@ -161,6 +187,6 @@ export const TemplatePreview = ({
           onSelectElement={onSelectElement}
         />
       ))}
-    </Box>
+    </TemplatePreviewPage>
   );
 };

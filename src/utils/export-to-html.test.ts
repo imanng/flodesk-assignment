@@ -61,6 +61,17 @@ describe('exportToHtml', () => {
     expect(html).toContain('display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px');
   });
 
+  it('preserves stack gap styles for stacked sections', () => {
+    const portfolio = TEMPLATES[0];
+    expect(portfolio).toBeDefined();
+    const template = structuredClone(portfolio as Template);
+    template.sections[0]!.gap = '24px';
+
+    const html = exportToHtml(template);
+
+    expect(html).toContain('display: flex; flex-direction: column; gap: 24px');
+  });
+
   it('preserves raw text in exported content by escaping it into safe HTML', () => {
     const portfolio = TEMPLATES[0];
     expect(portfolio).toBeDefined();

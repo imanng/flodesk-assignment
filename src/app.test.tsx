@@ -22,20 +22,22 @@ describe('App', () => {
     resetBuilderStore();
   });
 
-  it('renders the available templates in the gallery', () => {
+  it('renders the available templates in the gallery', async () => {
     renderApp();
 
-    expect(screen.getByText('Portfolio')).toBeInTheDocument();
-    expect(screen.getByText('Event Launch')).toBeInTheDocument();
-    expect(screen.getByText('Restaurant')).toBeInTheDocument();
+    expect(await screen.findByText('Portfolio')).toBeInTheDocument();
+    expect(await screen.findByText('Event Launch')).toBeInTheDocument();
+    expect(await screen.findByText('Restaurant')).toBeInTheDocument();
   });
 
-  it('shows a not found state for unknown template ids', () => {
+  it('shows a not found state for unknown template ids', async () => {
     renderApp('/missing-template');
 
-    expect(screen.getByText('Template not found')).toBeInTheDocument();
+    expect(await screen.findByText('Template not found')).toBeInTheDocument();
     expect(
-      screen.getByText('That template is not in your gallery. Pick one from the home page.'),
+      await screen.findByText(
+        'That template is not in your gallery. Pick one from the home page.',
+      ),
     ).toBeInTheDocument();
   });
 
@@ -44,7 +46,7 @@ describe('App', () => {
 
     renderApp();
 
-    await user.click(screen.getByText('Portfolio'));
+    await user.click(await screen.findByText('Portfolio'));
 
     expect(await screen.findByText('Page Settings')).toBeInTheDocument();
 

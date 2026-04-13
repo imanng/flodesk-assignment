@@ -1,6 +1,16 @@
-import { type CSSProperties, type JSX, memo } from 'react';
+import { type JSX, memo } from 'react';
 
-import type { ElementSettings, TemplateElement } from '@/types/template';
+import type { TemplateElement } from '@/types/template';
+import {
+  getButtonContentStyle,
+  getButtonWrapperStyle,
+  getDividerStyle,
+  getDividerWrapperStyle,
+  getElementStyle,
+  getImageStyle,
+  getImageWrapperStyle,
+  getTextElementStyle,
+} from '@/utils/template-styles';
 
 type ElementRendererProps = {
   element: TemplateElement;
@@ -9,30 +19,13 @@ type ElementRendererProps = {
   onClick?: (id: string) => void;
 };
 
-const settingsToStyle = (settings: ElementSettings): CSSProperties => {
-  const style: CSSProperties = {
-    fontSize: settings.fontSize,
-    color: settings.color,
-    textAlign: settings.textAlign,
-    padding: settings.padding,
-    backgroundColor: settings.backgroundColor,
-  };
-
-  if (settings.borderRadius) style.borderRadius = settings.borderRadius;
-  if (settings.fontWeight) style.fontWeight = settings.fontWeight === 'medium' ? 500 : settings.fontWeight;
-  if (settings.letterSpacing) style.letterSpacing = settings.letterSpacing;
-  if (settings.lineHeight) style.lineHeight = settings.lineHeight;
-
-  return style;
-};
-
 export const ElementRenderer = memo(({
   element,
   isSelected = false,
   isInteractive = false,
   onClick,
 }: ElementRendererProps) => {
-  const style = settingsToStyle(element.settings);
+  const style = getElementStyle(element.settings);
   const className = [
     'element-renderer',
     isInteractive ? 'element-renderer--interactive' : '',
@@ -61,7 +54,7 @@ export const ElementRenderer = memo(({
       return (
         <p
           className={className}
-          style={{ ...style, whiteSpace: 'pre-line' }}
+          style={getTextElementStyle(element.settings)}
           onClick={handleClick}
         >
           {element.data.text}
@@ -72,22 +65,14 @@ export const ElementRenderer = memo(({
       return (
         <div
           className={className}
-          style={{ textAlign: style.textAlign, padding: style.padding }}
+          style={getButtonWrapperStyle(element.settings)}
           onClick={handleClick}
         >
           <button
-            style={{
-              display: 'inline-block',
-              fontSize: style.fontSize,
-              color: style.color,
-              backgroundColor: style.backgroundColor,
-              padding: style.padding,
-              borderRadius: style.borderRadius,
-              fontWeight: style.fontWeight,
-              cursor: isInteractive ? 'pointer' : 'default',
-              textDecoration: 'none',
-              border: 'none',
-            }}
+            style={getButtonContentStyle(
+              element.settings,
+              isInteractive ? 'pointer' : 'default',
+            )}
           >
             {element.data.label}
           </button>
@@ -96,31 +81,27 @@ export const ElementRenderer = memo(({
 
     case 'image':
       return (
-        <div className={className} style={{ padding: style.padding }} onClick={handleClick}>
+        <div
+          className={className}
+          style={getImageWrapperStyle(element.settings)}
+          onClick={handleClick}
+        >
           <img
             src={element.data.src}
             alt={element.data.alt}
-            style={{
-              display: 'block',
-              width: '100%',
-              height: 'auto',
-              borderRadius: style.borderRadius,
-              objectFit: 'cover',
-            }}
+            style={getImageStyle(element.settings)}
           />
         </div>
       );
 
     case 'divider':
       return (
-        <div className={className} style={{ padding: style.padding }} onClick={handleClick}>
-          <hr
-            style={{
-              border: 'none',
-              borderTop: `1px solid ${style.color}`,
-              margin: 0,
-            }}
-          />
+        <div
+          className={className}
+          style={getDividerWrapperStyle(element.settings)}
+          onClick={handleClick}
+        >
+          <hr style={getDividerStyle(element.settings)} />
         </div>
       );
 

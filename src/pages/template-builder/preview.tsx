@@ -1,11 +1,11 @@
 import { Box } from '@flodesk/grain';
 import { useCallback } from 'react';
 
-import { TemplatePreviewSection } from '@/components/template-preview';
-import { FONT_STACKS } from '@/constants/font-presets';
 import {
-  selectPageSettings,
-  selectTemplateSection,
+  TemplatePreviewPage,
+  TemplatePreviewSection,
+} from '@/components/template-preview';
+import {
   selectTemplateSectionOrder,
   useBuilderStore,
 } from '@/store/builder-store';
@@ -14,39 +14,7 @@ type PreviewProps = {
   templateId: string;
 };
 
-type ConnectedPreviewSectionProps = {
-  templateId: string;
-  sectionId: string;
-  isInteractive: boolean;
-  onSelectElement?: (id: string) => void;
-};
-
-const ConnectedPreviewSection = ({
-  templateId,
-  sectionId,
-  isInteractive,
-  onSelectElement,
-}: ConnectedPreviewSectionProps) => {
-  const section = useBuilderStore((state) =>
-    selectTemplateSection(state, templateId, sectionId),
-  );
-
-  if (!section) return null;
-
-  return (
-    <TemplatePreviewSection
-      section={section}
-      templateId={templateId}
-      isInteractive={isInteractive}
-      onSelectElement={onSelectElement}
-    />
-  );
-};
-
 export const Preview = ({ templateId }: PreviewProps) => {
-  const pageSettings = useBuilderStore((state) =>
-    selectPageSettings(state, templateId),
-  );
   const sectionOrder = useBuilderStore((state) =>
     selectTemplateSectionOrder(state, templateId),
   );
@@ -56,15 +24,7 @@ export const Preview = ({ templateId }: PreviewProps) => {
     selectElement(null);
   }, [selectElement]);
 
-  if (!pageSettings || !sectionOrder) return null;
-
-  const pageStyle = {
-    backgroundColor: pageSettings.backgroundColor,
-    fontFamily: FONT_STACKS[pageSettings.fontPreset],
-    maxWidth: pageSettings.maxWidth,
-    margin: '0 auto',
-    minHeight: '100%',
-  } as const;
+  if (!sectionOrder) return null;
 
   return (
     <Box
@@ -82,17 +42,18 @@ export const Preview = ({ templateId }: PreviewProps) => {
         backgroundColor="background"
         maxWidth="100%"
         margin="0 auto"
-        style={pageStyle}
       >
-        {sectionOrder.map((sectionId) => (
-          <ConnectedPreviewSection
-            key={sectionId}
-            templateId={templateId}
-            sectionId={sectionId}
-            isInteractive
-            onSelectElement={selectElement}
-          />
-        ))}
+        <TemplatePreviewPage templateId={templateId}>
+          {sectionOrder.map((sectionId) => (
+            <TemplatePreviewSection
+              key={sectionId}
+              templateId={templateId}
+              sectionId={sectionId}
+              isInteractive
+              onSelectElement={selectElement}
+            />
+          ))}
+        </TemplatePreviewPage>
       </Box>
     </Box>
   );

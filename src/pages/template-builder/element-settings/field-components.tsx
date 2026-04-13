@@ -1,5 +1,5 @@
 import { Arrange, Slider, Stack, Text } from '@flodesk/grain';
-import { useEffect, useState } from 'react';
+import { memo, useCallback, useEffect, useState } from 'react';
 
 import {
   type ElementBuilderSettingsProps,
@@ -13,6 +13,10 @@ import {
 import { HEADING_LEVEL_OPTIONS, TARGET_OPTIONS } from '@/constants/element-settings';
 import { useBuilderActions } from '@/hooks/use-builder-actions';
 import { useElementSelector } from '@/hooks/use-element-selector';
+import {
+  selectTemplateElement,
+  useBuilderStore,
+} from '@/store/builder-store';
 import { clampNumber } from '@/utils/clamp';
 import { formatSpacing, parsePx, parseSpacing, type SpacingSides } from '@/utils/parse-px';
 import { validateLinkUrl } from '@/utils/sanitize';
@@ -226,34 +230,25 @@ export const BackgroundColorField = ({
   );
 };
 
-export const PaddingField = ({
-  templateId,
-  elementId,
-}: ElementBuilderSettingsProps) => {
-  const padding = useElementSelector(templateId, elementId, (element) =>
-    element?.settings.padding ?? '0px',
-  );
-  const { updateElementSettings } = useBuilderActions();
-  const paddingSides = parseSpacing(padding, 0);
+type PaddingSide = keyof SpacingSides;
 
-  const updatePaddingSide = (side: keyof SpacingSides, value: number) => {
-    const nextPadding = formatSpacing({
-      ...paddingSides,
-      [side]: value,
-    });
+type PaddingSideSliderProps = {
+  side: PaddingSide;
+  label: string;
+  inputId: string;
+  value: number;
+  onChange: (side: PaddingSide, nextValue: number) => void;
+};
 
-    updateElementSettings(templateId, elementId, {
-      padding: nextPadding,
-    });
-  };
-
-  const renderPaddingSlider = (
-    side: keyof SpacingSides,
-    label: string,
-    value: number,
-  ) => (
+const PaddingSideSlider = memo(({
+  side,
+  label,
+  inputId,
+  value,
+  onChange,
+}: PaddingSideSliderProps) => {
+  return (
     <Arrange
-      key={side}
       columns="56px 1fr auto"
       gap="s"
       alignItems="center"
@@ -261,25 +256,80 @@ export const PaddingField = ({
     >
       <Text size="s">{label}</Text>
       <Slider
-        id={`padding-${side}-${elementId}`}
+        id={inputId}
         min={0}
         max={64}
         value={clampNumber(value, 0, 64)}
-        onChange={(event) => updatePaddingSide(side, event.target.valueAsNumber)}
+        onChange={(event) => onChange(side, event.target.valueAsNumber)}
       />
       <Text size="s" color="content3">
         {value}px
       </Text>
     </Arrange>
   );
+});
+
+export const PaddingField = ({
+  templateId,
+  elementId,
+}: ElementBuilderSettingsProps) => {
+  const padding = useElementSelector(templateId, elementId, (element) =>
+    element?.settings.padding ?? '0px',
+  );
+  const paddingSides = parseSpacing(padding, 0);
+  const { updateElementSettings } = useBuilderActions();
+
+  const handleChange = useCallback(
+    (side: PaddingSide, nextValue: number) => {
+      const element = selectTemplateElement(
+        useBuilderStore.getState(),
+        templateId,
+        elementId,
+      );
+      const currentPadding = element?.settings.padding ?? '0px';
+      const currentPaddingSides = parseSpacing(currentPadding, 0);
+
+      updateElementSettings(templateId, elementId, {
+        padding: formatSpacing({
+          ...currentPaddingSides,
+          [side]: nextValue,
+        }),
+      });
+    },
+    [elementId, templateId, updateElementSettings],
+  );
 
   return (
     <SettingsField label="Padding">
       <Stack gap="s" paddingTop="s">
-        {renderPaddingSlider('top', 'Top', paddingSides.top)}
-        {renderPaddingSlider('right', 'Right', paddingSides.right)}
-        {renderPaddingSlider('bottom', 'Bottom', paddingSides.bottom)}
-        {renderPaddingSlider('left', 'Left', paddingSides.left)}
+        <PaddingSideSlider
+          side="top"
+          label="Top"
+          inputId={`padding-top-${elementId}`}
+          value={paddingSides.top}
+          onChange={handleChange}
+        />
+        <PaddingSideSlider
+          side="right"
+          label="Right"
+          inputId={`padding-right-${elementId}`}
+          value={paddingSides.right}
+          onChange={handleChange}
+        />
+        <PaddingSideSlider
+          side="bottom"
+          label="Bottom"
+          inputId={`padding-bottom-${elementId}`}
+          value={paddingSides.bottom}
+          onChange={handleChange}
+        />
+        <PaddingSideSlider
+          side="left"
+          label="Left"
+          inputId={`padding-left-${elementId}`}
+          value={paddingSides.left}
+          onChange={handleChange}
+        />
       </Stack>
     </SettingsField>
   );
