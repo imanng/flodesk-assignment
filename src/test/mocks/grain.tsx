@@ -66,6 +66,14 @@ type PopoverProps = PropsWithChildren<{
   isOpen?: boolean;
 }>;
 
+type ModalProps = PropsWithChildren<{
+  isOpen?: boolean;
+  onClose?: () => void;
+  title?: ReactNode;
+  description?: ReactNode;
+  hasCloseButton?: boolean;
+}>;
+
 const OMITTED_LAYOUT_PROPS = new Set([
   'align',
   'alignItems',
@@ -211,6 +219,30 @@ export const Popover = ({ trigger, isOpen, children }: PopoverProps) => (
     {isOpen ? children : null}
   </div>
 );
+
+export const Modal = ({
+  isOpen,
+  onClose,
+  title,
+  description,
+  hasCloseButton = true,
+  children,
+}: ModalProps) => {
+  if (!isOpen) return null;
+
+  return (
+    <div role="dialog" aria-modal="true">
+      {hasCloseButton ? (
+        <button type="button" aria-label="Close" onClick={onClose}>
+          Close
+        </button>
+      ) : null}
+      {title ? <h2>{title}</h2> : null}
+      {description ? <p>{description}</p> : null}
+      {children}
+    </div>
+  );
+};
 
 export const Icon = ({ icon }: { icon: ReactNode; size?: string }) => <span>{icon}</span>;
 export const IconArrowLeft = () => <span aria-hidden="true">arrow-left</span>;
