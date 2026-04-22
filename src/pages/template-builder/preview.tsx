@@ -1,30 +1,110 @@
 import { Box } from '@flodesk/grain';
-import { useCallback } from 'react';
+import type { ReactNode } from 'react';
+import { memo, useCallback } from 'react';
 
+import { ElementRenderer } from '@/components/element-renderer';
 import {
   TemplatePreviewPage,
   TemplatePreviewSection,
 } from '@/components/template-preview';
-import {
-  selectTemplateSectionOrder,
-  useBuilderStore,
-} from '@/store/builder-store';
+import type { TemplateElement } from '@/types/template';
 
-type PreviewProps = {
+import {
+  usePreviewElementModel,
+  usePreviewPageModel,
+  usePreviewSectionModel,
+} from './hooks/use-preview-model';
+
+type ConnectedPreviewPageProps = {
+  children: ReactNode;
+  onClick: () => void;
+  pageSettings: NonNullable<ReturnType<typeof usePreviewPageModel>["pageSettings"]>;
+};
+
+const ConnectedPreviewPage = memo(({
+  children,
+  onClick,
+  pageSettings,
+}: ConnectedPreviewPageProps) => {
+  return (
+    <TemplatePreviewPage pageSettings={pageSettings} onClick={onClick}>
+      {children}
+    </TemplatePreviewPage>
+  );
+});
+
+type ConnectedPreviewElementProps = {
+  element: TemplateElement;
+  onSelectElement: (elementId: string) => void;
   templateId: string;
 };
 
-export const Preview = ({ templateId }: PreviewProps) => {
-  const sectionOrder = useBuilderStore((state) =>
-    selectTemplateSectionOrder(state, templateId),
+const ConnectedPreviewElement = memo(({
+  element,
+  onSelectElement,
+  templateId,
+}: ConnectedPreviewElementProps) => {
+  const model = usePreviewElementModel(templateId, element.id);
+
+  return (
+    <ElementRenderer
+      element={element}
+      isInteractive
+      isSelected={model.isSelected}
+      onClick={onSelectElement}
+    />
   );
-  const selectElement = useBuilderStore((s) => s.selectElement);
+});
 
-  const onDeselectAll = useCallback(() => {
-    selectElement(null);
-  }, [selectElement]);
+type ConnectedPreviewSectionProps = {
+  onSelectElement: (elementId: string) => void;
+  sectionId: string;
+  templateId: string;
+};
 
-  if (!sectionOrder) return null;
+const ConnectedPreviewSection = memo(({
+  onSelectElement,
+  sectionId,
+  templateId,
+}: ConnectedPreviewSectionProps) => {
+  const model = usePreviewSectionModel(templateId, sectionId);
+  const renderElement = useCallback(
+    (element: TemplateElement) => (
+      <ConnectedPreviewElement
+        element={element}
+        onSelectElement={onSelectElement}
+        templateId={templateId}
+      />
+    ),
+    [onSelectElement, templateId],
+  );
+
+  if (!model.hasSection || !model.section) return null;
+
+  return (
+    <TemplatePreviewSection
+      isInteractive
+      onSelectElement={onSelectElement}
+      renderElement={renderElement}
+      section={model.section}
+    />
+  );
+});
+
+type PreviewProps = {
+  onDeselectAll: () => void;
+  onSelectElement: (elementId: string) => void;
+  templateId: string;
+};
+
+const PreviewComponent = ({
+  onDeselectAll,
+  onSelectElement,
+  templateId,
+}: PreviewProps) => {
+  const pageModel = usePreviewPageModel(templateId);
+
+  if (!pageModel.hasRenderableSections || !pageModel.pageSettings) return null;
 
   return (
     <Box
@@ -43,18 +123,22 @@ export const Preview = ({ templateId }: PreviewProps) => {
         maxWidth="100%"
         margin="0 auto"
       >
-        <TemplatePreviewPage templateId={templateId}>
-          {sectionOrder.map((sectionId) => (
-            <TemplatePreviewSection
+        <ConnectedPreviewPage
+          onClick={onDeselectAll}
+          pageSettings={pageModel.pageSettings}
+        >
+          {pageModel.sectionOrder.map((sectionId) => (
+            <ConnectedPreviewSection
               key={sectionId}
-              templateId={templateId}
+              onSelectElement={onSelectElement}
               sectionId={sectionId}
-              isInteractive
-              onSelectElement={selectElement}
+              templateId={templateId}
             />
           ))}
-        </TemplatePreviewPage>
+        </ConnectedPreviewPage>
       </Box>
     </Box>
   );
 };
+
+export const Preview = memo(PreviewComponent);

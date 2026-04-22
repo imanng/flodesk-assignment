@@ -81,7 +81,7 @@ describe('ImageSourceField', () => {
     await user.type(input, 'https://images.example.com/stale-photo.jpg');
 
     act(() => {
-      useBuilderStore.getState().updateElementData('portfolio', 'about-image', {
+      useBuilderStore.getState().updateElementData('portfolio', 'about-image', 'image', {
         src: 'https://images.example.com/fresh-photo.jpg',
         source: 'url',
       });

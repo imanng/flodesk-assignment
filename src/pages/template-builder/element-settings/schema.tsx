@@ -5,8 +5,8 @@ import {
 } from '@/components/form';
 import type { ElementType } from '@/types/template';
 
-import { AlignmentField } from './alignment-field';
 import {
+  AlignmentField,
   BackgroundColorField,
   BorderRadiusField,
   ButtonHrefField,
@@ -14,14 +14,14 @@ import {
   ButtonTargetField,
   DividerColorField,
   FontSizeField,
+  FontWeightField,
   HeadingLevelField,
   ImageAltField,
+  ImageSourceField,
   PaddingField,
   TextColorField,
   TextContentField,
-} from './field-components';
-import { FontWeightField } from './font-weight-field';
-import { ImageSourceField } from './image-source-field';
+} from './fields/field-components';
 
 export const ELEMENT_SETTINGS_SECTIONS: Record<
   ElementType,

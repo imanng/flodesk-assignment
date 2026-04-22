@@ -78,6 +78,14 @@ import { Preview } from './preview';
 const getCount = (sectionId: string) => sectionRenderCounts.get(sectionId) ?? 0;
 
 describe('Preview', () => {
+  const onSelectElement = (elementId: string) => {
+    useBuilderStore.getState().selectElement(elementId);
+  };
+
+  const onDeselectAll = () => {
+    useBuilderStore.getState().selectElement(null);
+  };
+
   beforeEach(() => {
     sectionRenderCounts.clear();
     resetBuilderStore();
@@ -86,7 +94,13 @@ describe('Preview', () => {
   it('does not rerender connected sections when selection changes', async () => {
     const user = userEvent.setup();
 
-    render(<Preview templateId="portfolio" />);
+    render(
+      <Preview
+        templateId="portfolio"
+        onSelectElement={onSelectElement}
+        onDeselectAll={onDeselectAll}
+      />,
+    );
 
     expect(getCount('hero')).toBe(1);
     expect(getCount('about')).toBe(1);
@@ -112,7 +126,13 @@ describe('Preview', () => {
   });
 
   it('does not rerender connected sections when page settings change', () => {
-    render(<Preview templateId="portfolio" />);
+    render(
+      <Preview
+        templateId="portfolio"
+        onSelectElement={onSelectElement}
+        onDeselectAll={onDeselectAll}
+      />,
+    );
 
     expect(getCount('hero')).toBe(1);
     expect(getCount('about')).toBe(1);

@@ -22,13 +22,17 @@ export const PAGE_SETTINGS_SECTIONS: SettingsSection<PageBuilderSettingsProps>[]
   {
     id: 'typography',
     items: [
-      settingsItem('page-typography', (props) => <PageTypographyField {...props} />),
+      settingsItem('page-typography', (props) => (
+        <PageTypographyField {...props} />
+      )),
     ],
   },
   {
     id: 'layout',
     items: [
-      settingsItem('page-max-width', (props) => <PageMaxWidthField {...props} />),
+      settingsItem('page-max-width', (props) => (
+        <PageMaxWidthField {...props} />
+      )),
     ],
   },
 ];

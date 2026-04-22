@@ -1,17 +1,19 @@
 import { Arrange, Box, Flex, Stack, Text } from '@flodesk/grain';
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { materializeTemplate, useBuilderStore } from '@/store/builder-store';
+import { createSelectMaterializedTemplates } from '@/store/builder-selector';
+import { useBuilderStore } from '@/store/builder-store';
 
 import { TemplateCard } from './template-card';
 
 export const TemplateGallery = () => {
   const navigate = useNavigate();
-  const templateMap = useBuilderStore((s) => s.templateMap);
-  const templates = Object.values(templateMap).flatMap((template) => {
-    const materialized = materializeTemplate(template);
-    return materialized ? [materialized] : [];
-  });
+  const selectMaterializedTemplates = useMemo(
+    () => createSelectMaterializedTemplates(),
+    [],
+  );
+  const templates = useBuilderStore(selectMaterializedTemplates);
 
   return (
     <Flex direction="column" width="100%" minHeight="100vh" wrap="nowrap">

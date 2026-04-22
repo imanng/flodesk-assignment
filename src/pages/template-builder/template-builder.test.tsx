@@ -63,7 +63,7 @@ describe('TemplateBuilder', () => {
     expect(await screen.findByText('Heading Settings')).toBeInTheDocument();
 
     act(() => {
-      useBuilderStore.getState().updateElementData('portfolio', 'about-text', {
+      useBuilderStore.getState().updateElementData('portfolio', 'about-text', 'text', {
         text: 'Draft about copy',
       });
     });
@@ -118,5 +118,31 @@ describe('TemplateBuilder', () => {
     expect(await screen.findByText('Page Settings')).toBeInTheDocument();
     expect(screen.getByText('Background color')).toBeInTheDocument();
     expect(useBuilderStore.getState().selectedElementId).toBeNull();
+  });
+
+  it('updates sidebar mode and selected preview element when selection changes', async () => {
+    const user = userEvent.setup();
+
+    renderTemplateBuilder();
+
+    const heroHeading = screen.getByRole('heading', {
+      level: 1,
+      name: /hi, i'?m/i,
+    });
+    const heroSubheading = screen.getByText(/designer & developer crafting/i);
+
+    expect(screen.getByText('Page Settings')).toBeInTheDocument();
+    expect(heroHeading).not.toHaveClass('element-renderer--selected');
+    expect(heroSubheading).not.toHaveClass('element-renderer--selected');
+
+    await user.click(heroHeading);
+    expect(await screen.findByText('Heading Settings')).toBeInTheDocument();
+    expect(heroHeading).toHaveClass('element-renderer--selected');
+    expect(heroSubheading).not.toHaveClass('element-renderer--selected');
+
+    await user.click(heroSubheading);
+    expect(await screen.findByText('Text Settings')).toBeInTheDocument();
+    expect(heroHeading).not.toHaveClass('element-renderer--selected');
+    expect(heroSubheading).toHaveClass('element-renderer--selected');
   });
 });

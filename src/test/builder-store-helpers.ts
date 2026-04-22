@@ -1,8 +1,6 @@
 import { TEMPLATES } from '@/constants/templates';
-import {
-  selectMaterializedTemplate,
-  useBuilderStore,
-} from '@/store/builder-store';
+import { selectMaterializedTemplate } from '@/store/builder-selector';
+import { useBuilderStore } from '@/store/builder-store';
 import type { Template, TemplateElement, TemplateSection } from '@/types/template';
 
 const findElementInSection = (

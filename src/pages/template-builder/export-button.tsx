@@ -1,22 +1,14 @@
 import { Button, IconDownload } from '@flodesk/grain';
 
-import { selectMaterializedTemplate, useBuilderStore } from '@/store/builder-store';
-
 type ExportButtonProps = {
-  templateId: string;
+  onExport: () => void | Promise<void>;
 };
 
-export const ExportButton = ({ templateId }: ExportButtonProps) => (
+export const ExportButton = ({ onExport }: ExportButtonProps) => (
   <Button
     variant="accent"
     icon={<IconDownload />}
-    onClick={async () => {
-      const template = selectMaterializedTemplate(useBuilderStore.getState(), templateId);
-      if (!template) return;
-
-      const { downloadHtml } = await import('@/utils/export-to-html');
-      downloadHtml(template);
-    }}
+    onClick={onExport}
   >
     Export
   </Button>

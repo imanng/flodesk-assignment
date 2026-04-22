@@ -2,7 +2,8 @@ import { useParams } from 'react-router-dom';
 
 import { NotFound } from '@/pages/not-found';
 import { TemplateBuilder } from '@/pages/template-builder';
-import { selectHasTemplate, useBuilderStore } from '@/store/builder-store';
+import { selectHasTemplate } from '@/store/builder-selector';
+import { useBuilderStore } from '@/store/builder-store';
 
 export const TemplateBuilderGuard = () => {
   const { id } = useParams<{ id: string }>();

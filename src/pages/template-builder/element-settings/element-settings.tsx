@@ -1,19 +1,16 @@
 import { Stack } from '@flodesk/grain';
 
-import { type ElementBuilderSettingsProps,SettingsSections } from '@/components/form';
-import { useElementSelector } from '@/hooks/use-element-selector';
+import { type ElementBuilderSettingsProps, SettingsSections } from '@/components/form';
 
+import { useElementSettingsModel } from './hooks/field-models';
 import { ELEMENT_SETTINGS_SECTIONS } from './schema';
 
 export const ElementSettings = ({
   elementId,
   templateId,
 }: ElementBuilderSettingsProps) => {
-  const elementType = useElementSelector(
-    templateId,
-    elementId,
-    (element) => element?.type,
-  );
+  const model = useElementSettingsModel(templateId, elementId);
+  const { elementType } = model;
 
   if (!elementType) return null;
 

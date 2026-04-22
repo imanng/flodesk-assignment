@@ -41,10 +41,10 @@ describe('useBuilderStore', () => {
   });
 
   it('keeps raw edited text fields in state and can reset seeded content', () => {
-    useBuilderStore.getState().updateElementData('portfolio', 'about-text', {
+    useBuilderStore.getState().updateElementData('portfolio', 'about-text', 'text', {
       text: 'Intro <b onclick="alert(1)">Bold</b><script>alert(1)</script>',
     });
-    useBuilderStore.getState().updateElementData('portfolio', 'cta-button', {
+    useBuilderStore.getState().updateElementData('portfolio', 'cta-button', 'button', {
       label: 'Click <span onmouseover="alert(1)">me</span>',
     });
 

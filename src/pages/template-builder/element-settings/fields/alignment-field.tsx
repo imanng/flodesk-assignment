@@ -10,8 +10,8 @@ import {
   SettingsToggleControl,
   ToggleOption,
 } from '@/components/form';
-import { useBuilderActions } from '@/hooks/use-builder-actions';
-import { useElementSelector } from '@/hooks/use-element-selector';
+
+import { useAlignmentFieldModel } from '../hooks/field-models';
 
 const ALIGNMENT_OPTIONS: ToggleOption<"left" | "right" | "center">[] = [
   {
@@ -35,22 +35,15 @@ export const AlignmentField = ({
   templateId,
   elementId,
 }: ElementBuilderSettingsProps) => {
-  const textAlign = useElementSelector(templateId, elementId, (element) =>
-    element?.type && element.type !== 'image' && element.type !== 'divider'
-      ? element.settings.textAlign
-      : 'left',
-  );
-  const { updateElementSettings } = useBuilderActions();
+  const model = useAlignmentFieldModel(templateId, elementId);
 
   return (
     <SettingsToggleControl
       label="Alignment"
       className="element-settings__text-toggles element-settings__text-toggles--align"
-      value={textAlign}
+      value={model.value}
       options={ALIGNMENT_OPTIONS}
-      onChange={(value) =>
-        updateElementSettings(templateId, elementId, { textAlign: value })
-      }
+      onChange={model.onChange}
     />
   );
 };

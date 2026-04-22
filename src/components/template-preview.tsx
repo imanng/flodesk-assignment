@@ -1,14 +1,14 @@
 import { Arrange, Box } from '@flodesk/grain';
 import type { ReactNode } from 'react';
-import { memo } from 'react';
+import { Fragment, memo } from 'react';
 
-import {
-  selectIsElementSelected,
-  selectPageSettings,
-  selectTemplateSection,
-  useBuilderStore,
-} from '@/store/builder-store';
-import type { PageSettings, Template, TemplateColumn, TemplateElement, TemplateSection } from '@/types/template';
+import type {
+  PageSettings,
+  Template,
+  TemplateColumn,
+  TemplateElement,
+  TemplateSection,
+} from '@/types/template';
 import {
   getColumnsLayoutStyle,
   getColumnStyle,
@@ -18,95 +18,78 @@ import {
 
 import { ElementRenderer } from './element-renderer';
 
-type PreviewElementProps = {
+type TemplatePreviewElementProps = {
   element: TemplateElement;
-  templateId?: string;
   isInteractive: boolean;
-  onSelectElement?: (id: string) => void;
+  isSelected?: boolean;
+  onSelectElement?: (elementId: string) => void;
 };
 
-const PreviewElement = memo(({
+const TemplatePreviewElement = memo(({
   element,
-  templateId,
   isInteractive,
+  isSelected = false,
   onSelectElement,
-}: PreviewElementProps) => {
-  const isSelected = useBuilderStore((state) =>
-    templateId ? selectIsElementSelected(state, templateId, element.id) : false,
-  );
+}: TemplatePreviewElementProps) => (
+  <ElementRenderer
+    element={element}
+    isSelected={isSelected}
+    isInteractive={isInteractive}
+    onClick={onSelectElement}
+  />
+));
 
-  return (
-    <ElementRenderer
-      element={element}
-      isSelected={isSelected}
-      isInteractive={isInteractive}
-      onClick={onSelectElement}
-    />
-  );
-});
+type RenderPreviewElement = (element: TemplateElement) => ReactNode;
 
 type PreviewColumnProps = {
-  col: TemplateColumn;
-  templateId?: string;
-  isInteractive: boolean;
-  onSelectElement?: (id: string) => void;
+  column: TemplateColumn;
+  renderElement: RenderPreviewElement;
 };
 
-const PreviewColumn = ({
-  col,
-  templateId,
-  isInteractive,
-  onSelectElement,
-}: PreviewColumnProps) => (
+const PreviewColumn = ({ column, renderElement }: PreviewColumnProps) => (
   <Box style={getColumnStyle()}>
-    {col.elements.map((el) => (
-      <PreviewElement
-        key={el.id}
-        element={el}
-        templateId={templateId}
-        isInteractive={isInteractive}
-        onSelectElement={onSelectElement}
-      />
+    {column.elements.map((element) => (
+      <Fragment key={element.id}>
+        {renderElement(element)}
+      </Fragment>
     ))}
   </Box>
 );
 
-type PreviewSectionProps = {
+type TemplatePreviewSectionProps = {
   isInteractive: boolean;
-  templateId?: string;
-  sectionId?: string;
-  section?: TemplateSection;
-  onSelectElement?: (id: string) => void;
+  onSelectElement?: (elementId: string) => void;
+  renderElement?: RenderPreviewElement;
+  section: TemplateSection;
+  selectedElementId?: string | null;
 };
 
 export const TemplatePreviewSection = memo(({
   isInteractive,
   onSelectElement,
-  templateId,
-  sectionId,
+  renderElement,
   section,
-}: PreviewSectionProps) => {
-  const savedSection = useBuilderStore((state) =>
-    templateId && sectionId
-      ? selectTemplateSection(state, templateId, sectionId)
-      : undefined,
-  );
-  const resolvedSection = savedSection ?? section;
-  if (!resolvedSection) return null;
+  selectedElementId,
+}: TemplatePreviewSectionProps) => {
+  const renderResolvedElement = renderElement ?? ((element: TemplateElement) => (
+    <TemplatePreviewElement
+      element={element}
+      isInteractive={isInteractive}
+      isSelected={selectedElementId === element.id}
+      onSelectElement={onSelectElement}
+    />
+  ));
+  const sectionStyle = getSectionStyle(section);
 
-  const sectionStyle = getSectionStyle(resolvedSection);
-
-  if (resolvedSection.layout === 'columns' && resolvedSection.columns) {
+  if (section.layout === 'columns' && section.columns) {
     return (
       <Box style={sectionStyle}>
-        <Arrange style={getColumnsLayoutStyle(resolvedSection.columns.length, resolvedSection.gap)}>
-          {resolvedSection.columns.map((col) => (
+        <Arrange style={getColumnsLayoutStyle(section.columns.length, section.gap)}>
+          {section.columns.map((column) => (
             <PreviewColumn
-              key={col.id}
-              col={col}
-              templateId={templateId}
-              isInteractive={isInteractive}
-              onSelectElement={onSelectElement}
+              key={column.id}
+              column={column}
+              renderElement={renderResolvedElement}
             />
           ))}
         </Arrange>
@@ -116,57 +99,45 @@ export const TemplatePreviewSection = memo(({
 
   return (
     <Box style={sectionStyle}>
-      {resolvedSection.elements?.map((el) => (
-        <PreviewElement
-          key={el.id}
-          element={el}
-          templateId={templateId}
-          isInteractive={isInteractive}
-          onSelectElement={onSelectElement}
-        />
+      {section.elements?.map((element) => (
+        <Fragment key={element.id}>
+          {renderResolvedElement(element)}
+        </Fragment>
       ))}
     </Box>
   );
 });
 
 type TemplatePreviewPageProps = {
-  onClick?: () => void;
-  templateId?: string;
-  pageSettings?: PageSettings;
   children: ReactNode;
+  onClick?: () => void;
+  pageSettings: PageSettings;
 };
 
 export const TemplatePreviewPage = ({
-  templateId,
-  pageSettings,
-  onClick,
   children,
-}: TemplatePreviewPageProps) => {
-  const savedPageSettings = useBuilderStore((state) =>
-    templateId ? selectPageSettings(state, templateId) : undefined,
-  );
-  const resolvedPageSettings = savedPageSettings ?? pageSettings;
-  if (!resolvedPageSettings) return null;
-
-  return (
-    <Box style={getPreviewPageStyle(resolvedPageSettings)} onClick={onClick}>
-      {children}
-    </Box>
-  );
-};
+  onClick,
+  pageSettings,
+}: TemplatePreviewPageProps) => (
+  <Box style={getPreviewPageStyle(pageSettings)} onClick={onClick}>
+    {children}
+  </Box>
+);
 
 type TemplatePreviewProps = {
-  template: Template;
   isInteractive?: boolean;
-  onSelectElement?: (id: string) => void;
   onDeselectAll?: () => void;
+  onSelectElement?: (elementId: string) => void;
+  selectedElementId?: string | null;
+  template: Template;
 };
 
 export const TemplatePreview = ({
-  template,
   isInteractive = false,
-  onSelectElement,
   onDeselectAll,
+  onSelectElement,
+  selectedElementId,
+  template,
 }: TemplatePreviewProps) => {
   const handleBackgroundClick = () => {
     if (isInteractive && onDeselectAll) {
@@ -182,9 +153,10 @@ export const TemplatePreview = ({
       {template.sections.map((section) => (
         <TemplatePreviewSection
           key={section.id}
-          section={section}
           isInteractive={isInteractive}
           onSelectElement={onSelectElement}
+          section={section}
+          selectedElementId={selectedElementId}
         />
       ))}
     </TemplatePreviewPage>

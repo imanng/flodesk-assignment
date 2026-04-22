@@ -1,26 +1,17 @@
 import { Arrange, Stack, Text } from '@flodesk/grain';
 
-import { selectElementType, useBuilderStore } from '@/store/builder-store';
-import type { TemplateElement } from '@/types/template';
-
 import { ElementSettings } from './element-settings';
+import { useSidebarModel } from './hooks/use-sidebar-model';
 import { PageSettings } from './page-settings';
 
 type SidebarProps = {
   templateId: string;
 };
 
-const getSettingsTitle = (elementType?: TemplateElement['type']): string => {
-  if (!elementType) return 'Page Settings';
-  return `${elementType.charAt(0).toUpperCase()}${elementType.slice(1)} Settings`;
-};
-
-export const Sidebar = ({ templateId }: SidebarProps) => {
-  const selectedElementId = useBuilderStore((s) => s.selectedElementId);
-  const selectedElementType = useBuilderStore((state) =>
-    selectElementType(state, templateId, state.selectedElementId),
-  );
-  const activeElementId = selectedElementType ? selectedElementId : null;
+export const Sidebar = ({
+  templateId,
+}: SidebarProps) => {
+  const model = useSidebarModel(templateId);
 
   return (
     <Stack
@@ -40,13 +31,13 @@ export const Sidebar = ({ templateId }: SidebarProps) => {
         borderSide="bottom"
         height={7}
       >
-        <Text weight="medium" size="l" hasEllipsis>{getSettingsTitle(selectedElementType)}</Text>
+        <Text weight="medium" size="l" hasEllipsis>{model.title}</Text>
       </Arrange>
 
-      {activeElementId ? (
+      {model.activeElementId ? (
         <ElementSettings
-          key={activeElementId}
-          elementId={activeElementId}
+          key={model.activeElementId}
+          elementId={model.activeElementId}
           templateId={templateId}
         />
       ) : (

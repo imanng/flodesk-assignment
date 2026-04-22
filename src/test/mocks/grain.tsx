@@ -96,6 +96,7 @@ const OMITTED_LAYOUT_PROPS = new Set([
   'overflow',
   'overflowY',
   'padding',
+  'paddingTop',
   'paddingX',
   'paddingY',
   'placement',
