@@ -5,6 +5,7 @@ import { useBuilderStore } from '@/store/builder-store';
 export const useBuilderActions = () =>
   useBuilderStore(
     useShallow((state) => ({
+      clearSelection: state.clearSelection,
       selectElement: state.selectElement,
       updatePageSettings: state.updatePageSettings,
       updateElementSettings: state.updateElementSettings,

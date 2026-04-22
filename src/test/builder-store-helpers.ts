@@ -21,13 +21,15 @@ const findElementInSection = (
 export const resetBuilderStore = () => {
   localStorage.clear();
 
-  const { resetTemplate, selectElement } = useBuilderStore.getState();
+  const { clearSelection, resetTemplate } = useBuilderStore.getState();
   for (const template of TEMPLATES) {
     resetTemplate(template.id);
+    clearSelection(template.id);
   }
-
-  selectElement(null);
 };
+
+export const getSelectedElementId = (templateId: string): string | null =>
+  useBuilderStore.getState().session.selectedElementIds[templateId] ?? null;
 
 export const getTemplate = (templateId: string): Template => {
   const template = selectMaterializedTemplate(useBuilderStore.getState(), templateId);

@@ -1,6 +1,11 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { getElement, getTemplate, resetBuilderStore } from '@/test/builder-store-helpers';
+import {
+  getElement,
+  getSelectedElementId,
+  getTemplate,
+  resetBuilderStore,
+} from '@/test/builder-store-helpers';
 
 import { useBuilderStore } from './builder-store';
 
@@ -40,6 +45,19 @@ describe('useBuilderStore', () => {
     expect(untouchedHeading.settings.color).toBe('#f8fafc');
   });
 
+  it('tracks selection per template and clearSelection only affects the targeted template', () => {
+    useBuilderStore.getState().selectElement('portfolio', 'hero-heading');
+    useBuilderStore.getState().selectElement('event-launch', 'event-heading');
+
+    expect(getSelectedElementId('portfolio')).toBe('hero-heading');
+    expect(getSelectedElementId('event-launch')).toBe('event-heading');
+
+    useBuilderStore.getState().clearSelection('portfolio');
+
+    expect(getSelectedElementId('portfolio')).toBeNull();
+    expect(getSelectedElementId('event-launch')).toBe('event-heading');
+  });
+
   it('keeps raw edited text fields in state and can reset seeded content', () => {
     useBuilderStore.getState().updateElementData('portfolio', 'about-text', 'text', {
       text: 'Intro <b onclick="alert(1)">Bold</b><script>alert(1)</script>',
@@ -65,6 +83,9 @@ describe('useBuilderStore', () => {
       'Click <span onmouseover="alert(1)">me</span>',
     );
 
+    useBuilderStore.getState().selectElement('portfolio', 'hero-heading');
+    useBuilderStore.getState().selectElement('event-launch', 'event-heading');
+
     useBuilderStore.getState().resetTemplate('portfolio');
 
     const resetTextElement = getElement('portfolio', 'about-text');
@@ -73,6 +94,8 @@ describe('useBuilderStore', () => {
     }
 
     expect(resetTextElement.data.text).toContain('multidisciplinary designer');
+    expect(getSelectedElementId('portfolio')).toBeNull();
+    expect(getSelectedElementId('event-launch')).toBe('event-heading');
   });
 
   it('stores uploaded images as data URLs and marks them as uploads', () => {

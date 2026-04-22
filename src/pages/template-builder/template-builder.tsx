@@ -6,26 +6,34 @@ import { Preview } from './preview';
 import { Sidebar } from './sidebar';
 
 export const TemplateBuilder = () => {
-  const { state, actions } = useTemplateBuilder();
-  const { templateId, templateName } = state;
+  const builderModel = useTemplateBuilder();
 
-  if (!templateId) return null;
+  if (!builderModel) return null;
+
+  const { header, preview, sidebar } = builderModel;
 
   return (
     <Flex direction="column" height="100%" width="100%">
       <TemplateBuilderHeader
-        templateName={templateName}
-        onGoBack={actions.goBack}
-        onExportTemplate={actions.exportTemplate}
-        onResetTemplate={actions.resetTemplate}
+        onExportTemplate={header.onExportTemplate}
+        onGoBack={header.onGoBack}
+        onResetTemplate={header.onResetTemplate}
+        templateName={header.templateName}
       />
       <Flex flex="1" overflow="auto" width="100%">
         <Preview
-          templateId={templateId}
-          onDeselectAll={actions.deselectAll}
-          onSelectElement={actions.selectElement}
+          onDeselectAll={preview.onDeselectAll}
+          onSelectElement={preview.onSelectElement}
+          pageSettings={preview.pageSettings}
+          sectionIds={preview.sectionIds}
+          templateId={preview.templateId}
         />
-        <Sidebar templateId={templateId} />
+        <Sidebar
+          elementId={sidebar.elementId}
+          mode={sidebar.mode}
+          templateId={sidebar.templateId}
+          title={sidebar.title}
+        />
       </Flex>
     </Flex>
   );

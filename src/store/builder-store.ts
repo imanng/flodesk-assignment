@@ -19,11 +19,16 @@ import type {
 
 const STORAGE_KEY = "builder-store";
 
+export type BuilderSessionState = {
+  selectedElementIds: Record<string, string | null>;
+};
+
 export type BuilderState = {
   templateMap: Record<string, BuilderTemplate>;
-  selectedElementId: string | null;
+  session: BuilderSessionState;
 
-  selectElement: (elementId: string | null) => void;
+  clearSelection: (templateId: string) => void;
+  selectElement: (templateId: string, elementId: string | null) => void;
   updatePageSettings: (
     templateId: string,
     patch: Partial<PageSettings>,
@@ -51,11 +56,18 @@ export const useBuilderStore = create<BuilderState>()(
   persist(
     immer((set) => ({
       templateMap: buildTemplateMap(TEMPLATES),
-      selectedElementId: null,
+      session: {
+        selectedElementIds: {},
+      },
 
-      selectElement: (elementId) =>
+      selectElement: (templateId, elementId) =>
         set((draft) => {
-          draft.selectedElementId = elementId;
+          draft.session.selectedElementIds[templateId] = elementId;
+        }),
+
+      clearSelection: (templateId) =>
+        set((draft) => {
+          draft.session.selectedElementIds[templateId] = null;
         }),
 
       updatePageSettings: (templateId, patch) =>
@@ -97,7 +109,7 @@ export const useBuilderStore = create<BuilderState>()(
           const original = TEMPLATES.find((t) => t.id === templateId);
           if (!original) return;
           draft.templateMap[templateId] = normalizeTemplate(original);
-          draft.selectedElementId = null;
+          draft.session.selectedElementIds[templateId] = null;
         }),
     })),
     {

@@ -1,5 +1,6 @@
 import {
   type BuilderTemplate,
+  findElementInSection,
   getTemplateElement,
   getTemplateName,
   getTemplatePageSettings,
@@ -21,6 +22,11 @@ const selectBuilderTemplate = (
   templateId: string,
 ): BuilderTemplate | undefined => state.templateMap[templateId];
 
+const selectSelectedElementId = (
+  state: Pick<BuilderState, "session">,
+  templateId: string,
+): string | null => state.session.selectedElementIds[templateId] ?? null;
+
 export const selectPageSettings = (
   state: Pick<BuilderState, "templateMap">,
   templateId: string,
@@ -32,6 +38,24 @@ export const selectMaterializedTemplate = (
   templateId: string,
 ): Template | undefined =>
   materializeTemplate(selectBuilderTemplate(state, templateId));
+
+export const createSelectMaterializedTemplate = (templateId: string) => {
+  let cachedTemplate: BuilderTemplate | undefined;
+  let cachedMaterializedTemplate: Template | undefined;
+
+  return (state: Pick<BuilderState, "templateMap">): Template | undefined => {
+    const template = selectBuilderTemplate(state, templateId);
+    if (template === cachedTemplate) {
+      return cachedMaterializedTemplate;
+    }
+
+    cachedTemplate = template;
+    cachedMaterializedTemplate = template
+      ? materializeTemplate(template)
+      : undefined;
+    return cachedMaterializedTemplate;
+  };
+};
 
 export const createSelectMaterializedTemplates = () => {
   let cachedTemplateMap: BuilderState["templateMap"] | null = null;
@@ -62,7 +86,8 @@ export const selectHasTemplate = (
 export const selectTemplateName = (
   state: Pick<BuilderState, "templateMap">,
   templateId: string,
-): string | undefined => getTemplateName(selectBuilderTemplate(state, templateId));
+): string | undefined =>
+  getTemplateName(selectBuilderTemplate(state, templateId));
 
 export const selectTemplateSectionOrder = (
   state: Pick<BuilderState, "templateMap">,
@@ -84,11 +109,29 @@ export const selectTemplateElement = (
 ): TemplateElement | undefined =>
   getTemplateElement(selectBuilderTemplate(state, templateId), elementId);
 
+const findSectionIdInTemplate = (
+  template: BuilderTemplate | undefined,
+  elementId: string,
+): string | null => {
+  if (!template) return null;
+
+  for (const sectionId of template.sectionOrder) {
+    const section = template.sectionMap[sectionId];
+    if (!section) continue;
+
+    if (findElementInSection(section, elementId)) {
+      return sectionId;
+    }
+  }
+
+  return null;
+};
+
 export const selectActiveSelection = (
-  state: Pick<BuilderState, "templateMap" | "selectedElementId">,
+  state: Pick<BuilderState, "session" | "templateMap">,
   templateId: string,
 ): { elementId: string; element: TemplateElement } | null => {
-  const elementId = state.selectedElementId;
+  const elementId = selectSelectedElementId(state, templateId);
   if (!elementId) return null;
 
   const element = selectTemplateElement(state, templateId, elementId);
@@ -101,18 +144,31 @@ export const selectActiveSelection = (
 };
 
 export const selectActiveElementId = (
-  state: Pick<BuilderState, "templateMap" | "selectedElementId">,
+  state: Pick<BuilderState, "session" | "templateMap">,
   templateId: string,
 ): string | null => selectActiveSelection(state, templateId)?.elementId ?? null;
 
+export const selectActiveSectionId = (
+  state: Pick<BuilderState, "session" | "templateMap">,
+  templateId: string,
+): string | null => {
+  const elementId = selectSelectedElementId(state, templateId);
+  if (!elementId) return null;
+
+  return findSectionIdInTemplate(
+    selectBuilderTemplate(state, templateId),
+    elementId,
+  );
+};
+
 export const selectActiveElementType = (
-  state: Pick<BuilderState, "templateMap" | "selectedElementId">,
+  state: Pick<BuilderState, "session" | "templateMap">,
   templateId: string,
 ): TemplateElement["type"] | undefined =>
   selectActiveSelection(state, templateId)?.element.type;
 
 export const selectIsElementSelected = (
-  state: Pick<BuilderState, "templateMap" | "selectedElementId">,
+  state: Pick<BuilderState, "session" | "templateMap">,
   templateId: string,
   elementId: string,
 ): boolean => selectActiveElementId(state, templateId) === elementId;

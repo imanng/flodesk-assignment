@@ -1,11 +1,12 @@
 import { Stack } from '@flodesk/grain';
+import { memo } from 'react';
 
 import { type PageBuilderSettingsProps, SettingsSections } from '@/components/form';
 
 import { useHasPageSettings } from './hooks/field-models';
 import { PAGE_SETTINGS_SECTIONS } from './schema';
 
-export const PageSettings = ({ templateId }: PageBuilderSettingsProps) => {
+const PageSettingsComponent = ({ templateId }: PageBuilderSettingsProps) => {
   const hasPageSettings = useHasPageSettings(templateId);
 
   if (!hasPageSettings) return null;
@@ -16,3 +17,5 @@ export const PageSettings = ({ templateId }: PageBuilderSettingsProps) => {
     </Stack>
   );
 };
+
+export const PageSettings = memo(PageSettingsComponent);

@@ -1,21 +1,24 @@
 import { useCallback } from "react";
 
-import { selectMaterializedTemplate } from "@/store/builder-selector";
-import { useBuilderStore } from "@/store/builder-store";
+import { type BuilderState, useBuilderStore } from "@/store/builder-store";
+import type { Template } from "@/types/template";
 
-const exportTemplateById = async (templateId: string): Promise<void> => {
-  const template = selectMaterializedTemplate(
-    useBuilderStore.getState(),
-    templateId,
-  );
-  if (!template) return;
-
+const exportTemplate = async (template: Template): Promise<void> => {
   const { downloadHtml } = await import("@/utils/export-to-html");
   downloadHtml(template);
 };
 
-export const useTemplateExport = (templateId: string | null) =>
-  useCallback(async () => {
-    if (!templateId) return;
-    await exportTemplateById(templateId);
-  }, [templateId]);
+export const useTemplateExport = (
+  selectTemplate:
+    | ((state: Pick<BuilderState, "templateMap">) => Template | undefined)
+    | null,
+) => {
+  return useCallback(async () => {
+    if (!selectTemplate) return;
+
+    const template = selectTemplate(useBuilderStore.getState());
+    if (!template) return;
+
+    await exportTemplate(template);
+  }, [selectTemplate]);
+};

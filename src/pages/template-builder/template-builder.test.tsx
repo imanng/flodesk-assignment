@@ -10,7 +10,10 @@ import {
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { useBuilderStore } from '@/store/builder-store';
-import { resetBuilderStore } from '@/test/builder-store-helpers';
+import {
+  getSelectedElementId,
+  resetBuilderStore,
+} from '@/test/builder-store-helpers';
 
 import { TemplateBuilder } from './template-builder';
 
@@ -29,6 +32,7 @@ const renderTemplateBuilder = () =>
     <GrainProvider>
       <MemoryRouter initialEntries={['/portfolio']}>
         <Routes>
+          <Route path="/" element={<div>Home</div>} />
           <Route
             path="/:id"
             element={(
@@ -86,7 +90,7 @@ describe('TemplateBuilder', () => {
     ).not.toBeInTheDocument();
     expect(screen.getByText('Draft about copy')).toBeInTheDocument();
     expect(screen.getByText('Heading Settings')).toBeInTheDocument();
-    expect(useBuilderStore.getState().selectedElementId).toBe('hero-heading');
+    expect(getSelectedElementId('portfolio')).toBe('hero-heading');
 
     await user.click(screen.getByRole('button', { name: 'Reset to defaults' }));
     await user.click(screen.getByRole('button', { name: 'Reset' }));
@@ -96,7 +100,7 @@ describe('TemplateBuilder', () => {
     ).toBeInTheDocument();
     expect(screen.queryByText('Draft about copy')).not.toBeInTheDocument();
     expect(await screen.findByText('Page Settings')).toBeInTheDocument();
-    expect(useBuilderStore.getState().selectedElementId).toBeNull();
+    expect(getSelectedElementId('portfolio')).toBeNull();
   });
 
   it('clears selection when navigating between templates', async () => {
@@ -117,7 +121,7 @@ describe('TemplateBuilder', () => {
 
     expect(await screen.findByText('Page Settings')).toBeInTheDocument();
     expect(screen.getByText('Background color')).toBeInTheDocument();
-    expect(useBuilderStore.getState().selectedElementId).toBeNull();
+    expect(getSelectedElementId('event-launch')).toBeNull();
   });
 
   it('updates sidebar mode and selected preview element when selection changes', async () => {
@@ -144,5 +148,26 @@ describe('TemplateBuilder', () => {
     expect(await screen.findByText('Text Settings')).toBeInTheDocument();
     expect(heroHeading).not.toHaveClass('element-renderer--selected');
     expect(heroSubheading).toHaveClass('element-renderer--selected');
+  });
+
+  it('clears the current template selection when navigating back', async () => {
+    const user = userEvent.setup();
+
+    renderTemplateBuilder();
+
+    await user.click(
+      screen.getByRole('heading', {
+        level: 1,
+        name: /hi, i'?m/i,
+      }),
+    );
+
+    expect(await screen.findByText('Heading Settings')).toBeInTheDocument();
+    expect(getSelectedElementId('portfolio')).toBe('hero-heading');
+
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+
+    expect(await screen.findByText('Home')).toBeInTheDocument();
+    expect(getSelectedElementId('portfolio')).toBeNull();
   });
 });

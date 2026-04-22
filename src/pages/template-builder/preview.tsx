@@ -1,60 +1,25 @@
 import { Box } from '@flodesk/grain';
-import type { ReactNode } from 'react';
-import { memo, useCallback } from 'react';
+import { memo } from 'react';
 
-import { ElementRenderer } from '@/components/element-renderer';
 import {
   TemplatePreviewPage,
   TemplatePreviewSection,
 } from '@/components/template-preview';
-import type { TemplateElement } from '@/types/template';
-
 import {
-  usePreviewElementModel,
-  usePreviewPageModel,
-  usePreviewSectionModel,
-} from './hooks/use-preview-model';
+  selectActiveElementId,
+  selectActiveSectionId,
+  selectTemplateSection,
+} from '@/store/builder-selector';
+import { useBuilderStore } from '@/store/builder-store';
+import type { PageSettings } from '@/types/template';
 
-type ConnectedPreviewPageProps = {
-  children: ReactNode;
-  onClick: () => void;
-  pageSettings: NonNullable<ReturnType<typeof usePreviewPageModel>["pageSettings"]>;
-};
-
-const ConnectedPreviewPage = memo(({
-  children,
-  onClick,
-  pageSettings,
-}: ConnectedPreviewPageProps) => {
-  return (
-    <TemplatePreviewPage pageSettings={pageSettings} onClick={onClick}>
-      {children}
-    </TemplatePreviewPage>
-  );
-});
-
-type ConnectedPreviewElementProps = {
-  element: TemplateElement;
+export type PreviewProps = {
+  onDeselectAll: () => void;
   onSelectElement: (elementId: string) => void;
+  pageSettings: PageSettings;
+  sectionIds: string[];
   templateId: string;
 };
-
-const ConnectedPreviewElement = memo(({
-  element,
-  onSelectElement,
-  templateId,
-}: ConnectedPreviewElementProps) => {
-  const model = usePreviewElementModel(templateId, element.id);
-
-  return (
-    <ElementRenderer
-      element={element}
-      isInteractive
-      isSelected={model.isSelected}
-      onClick={onSelectElement}
-    />
-  );
-});
 
 type ConnectedPreviewSectionProps = {
   onSelectElement: (elementId: string) => void;
@@ -67,44 +32,35 @@ const ConnectedPreviewSection = memo(({
   sectionId,
   templateId,
 }: ConnectedPreviewSectionProps) => {
-  const model = usePreviewSectionModel(templateId, sectionId);
-  const renderElement = useCallback(
-    (element: TemplateElement) => (
-      <ConnectedPreviewElement
-        element={element}
-        onSelectElement={onSelectElement}
-        templateId={templateId}
-      />
-    ),
-    [onSelectElement, templateId],
+  const section = useBuilderStore((state) =>
+    selectTemplateSection(state, templateId, sectionId),
+  );
+  const selectedElementId = useBuilderStore((state) =>
+    selectActiveSectionId(state, templateId) === sectionId
+      ? selectActiveElementId(state, templateId)
+      : null,
   );
 
-  if (!model.hasSection || !model.section) return null;
+  if (!section) return null;
 
   return (
     <TemplatePreviewSection
       isInteractive
       onSelectElement={onSelectElement}
-      renderElement={renderElement}
-      section={model.section}
+      section={section}
+      selectedElementId={selectedElementId}
     />
   );
 });
 
-type PreviewProps = {
-  onDeselectAll: () => void;
-  onSelectElement: (elementId: string) => void;
-  templateId: string;
-};
-
 const PreviewComponent = ({
   onDeselectAll,
   onSelectElement,
+  pageSettings,
+  sectionIds,
   templateId,
 }: PreviewProps) => {
-  const pageModel = usePreviewPageModel(templateId);
-
-  if (!pageModel.hasRenderableSections || !pageModel.pageSettings) return null;
+  if (sectionIds.length === 0) return null;
 
   return (
     <Box
@@ -123,11 +79,8 @@ const PreviewComponent = ({
         maxWidth="100%"
         margin="0 auto"
       >
-        <ConnectedPreviewPage
-          onClick={onDeselectAll}
-          pageSettings={pageModel.pageSettings}
-        >
-          {pageModel.sectionOrder.map((sectionId) => (
+        <TemplatePreviewPage pageSettings={pageSettings}>
+          {sectionIds.map((sectionId) => (
             <ConnectedPreviewSection
               key={sectionId}
               onSelectElement={onSelectElement}
@@ -135,7 +88,7 @@ const PreviewComponent = ({
               templateId={templateId}
             />
           ))}
-        </ConnectedPreviewPage>
+        </TemplatePreviewPage>
       </Box>
     </Box>
   );

@@ -1,18 +1,22 @@
 import { Arrange, Stack, Text } from '@flodesk/grain';
+import { memo } from 'react';
 
 import { ElementSettings } from './element-settings';
-import { useSidebarModel } from './hooks/use-sidebar-model';
 import { PageSettings } from './page-settings';
 
-type SidebarProps = {
+export type SidebarProps = {
+  elementId: string | null;
+  mode: 'page' | 'element';
   templateId: string;
+  title: string;
 };
 
-export const Sidebar = ({
+const SidebarComponent = ({
+  elementId,
+  mode,
   templateId,
+  title,
 }: SidebarProps) => {
-  const model = useSidebarModel(templateId);
-
   return (
     <Stack
       backgroundColor="background"
@@ -31,13 +35,13 @@ export const Sidebar = ({
         borderSide="bottom"
         height={7}
       >
-        <Text weight="medium" size="l" hasEllipsis>{model.title}</Text>
+        <Text weight="medium" size="l" hasEllipsis>{title}</Text>
       </Arrange>
 
-      {model.activeElementId ? (
+      {mode === 'element' && elementId ? (
         <ElementSettings
-          key={model.activeElementId}
-          elementId={model.activeElementId}
+          key={elementId}
+          elementId={elementId}
           templateId={templateId}
         />
       ) : (
@@ -46,3 +50,5 @@ export const Sidebar = ({
     </Stack>
   );
 };
+
+export const Sidebar = memo(SidebarComponent);

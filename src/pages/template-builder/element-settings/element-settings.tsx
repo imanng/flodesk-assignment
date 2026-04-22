@@ -1,11 +1,12 @@
 import { Stack } from '@flodesk/grain';
+import { memo } from 'react';
 
 import { type ElementBuilderSettingsProps, SettingsSections } from '@/components/form';
 
 import { useElementSettingsModel } from './hooks/field-models';
 import { ELEMENT_SETTINGS_SECTIONS } from './schema';
 
-export const ElementSettings = ({
+const ElementSettingsComponent = ({
   elementId,
   templateId,
 }: ElementBuilderSettingsProps) => {
@@ -23,3 +24,5 @@ export const ElementSettings = ({
     </Stack>
   );
 };
+
+export const ElementSettings = memo(ElementSettingsComponent);
