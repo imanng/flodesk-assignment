@@ -134,7 +134,7 @@ const findSectionIdInTemplate = (
   return null;
 };
 
-export const selectActiveSelection = (
+const selectActiveSelection = (
   state: Pick<BuilderState, "session" | "templateMap">,
   templateId: string,
 ): { elementId: string; element: TemplateElement } | null => {
@@ -180,9 +180,3 @@ export const selectActiveElementType = (
   templateId: string,
 ): TemplateElement["type"] | undefined =>
   selectActiveSelection(state, templateId)?.element.type;
-
-export const selectIsElementSelected = (
-  state: Pick<BuilderState, "session" | "templateMap">,
-  templateId: string,
-  elementId: string,
-): boolean => selectActiveElementId(state, templateId) === elementId;
