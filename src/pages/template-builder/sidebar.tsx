@@ -38,6 +38,7 @@ const SidebarComponent = ({
         <Text weight="medium" size="l" hasEllipsis>{title}</Text>
       </Arrange>
 
+      {/* Sidebar switches between page-level and selected-element settings. */}
       {mode === 'element' && elementId ? (
         <ElementSettings
           key={elementId}

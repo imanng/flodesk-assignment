@@ -27,6 +27,9 @@ const selectSelectedElementId = (
   templateId: string,
 ): string | null => state.session.selectedElementIds[templateId] ?? null;
 
+/**
+ * Page-level settings consumed by preview and page settings panel.
+ */
 export const selectPageSettings = (
   state: Pick<BuilderState, "templateMap">,
   templateId: string,
@@ -43,6 +46,10 @@ export const createSelectMaterializedTemplate = (templateId: string) => {
   let cachedTemplate: BuilderTemplate | undefined;
   let cachedMaterializedTemplate: Template | undefined;
 
+  /**
+   * Returns the normalized runtime template used by preview/export and
+   * memoizes by builder-template identity to avoid redundant rematerialization.
+   */
   return (state: Pick<BuilderState, "templateMap">): Template | undefined => {
     const template = selectBuilderTemplate(state, templateId);
     if (template === cachedTemplate) {
@@ -143,11 +150,18 @@ export const selectActiveSelection = (
   };
 };
 
+/**
+ * Active element id for current template, if a valid selection exists.
+ */
 export const selectActiveElementId = (
   state: Pick<BuilderState, "session" | "templateMap">,
   templateId: string,
 ): string | null => selectActiveSelection(state, templateId)?.elementId ?? null;
 
+/**
+ * Resolves the section containing the currently selected element. This powers
+ * section-scoped selection rendering in preview.
+ */
 export const selectActiveSectionId = (
   state: Pick<BuilderState, "session" | "templateMap">,
   templateId: string,

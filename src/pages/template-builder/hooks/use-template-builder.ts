@@ -34,14 +34,19 @@ export const useTemplateBuilder = (): TemplateBuilderModel | null => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const templateId = id ?? null;
+
+  // Store actions used by the composed builder view model.
   const clearSelection = useBuilderStore((state) => state.clearSelection);
   const resetTemplate = useBuilderStore((state) => state.resetTemplate);
   const selectElementInStore = useBuilderStore((state) => state.selectElement);
+
+  // Memoized materializer used by export to avoid repeated reconstruction.
   const selectMaterializedTemplate = useMemo(
     () => (templateId ? createSelectMaterializedTemplate(templateId) : null),
     [templateId],
   );
 
+  // Store-derived view state consumed by preview/sidebar/header.
   const activeElementId = useBuilderStore((state) =>
     templateId ? selectActiveElementId(state, templateId) : null,
   );
@@ -59,6 +64,8 @@ export const useTemplateBuilder = (): TemplateBuilderModel | null => {
   const templateName = useBuilderStore((state) =>
     templateId ? selectTemplateName(state, templateId) : undefined,
   );
+
+  // Export pipeline: select current materialized template, then download.
   const exportTemplate = useTemplateExport(selectMaterializedTemplate);
 
   useEffect(() => {

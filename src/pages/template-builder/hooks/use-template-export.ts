@@ -16,9 +16,11 @@ export const useTemplateExport = (
   return useCallback(async () => {
     if (!selectTemplate) return;
 
+    // Read from the latest store snapshot at click-time.
     const template = selectTemplate(useBuilderStore.getState());
     if (!template) return;
 
+    // Export pipeline ends in HTML file download.
     await exportTemplate(template);
   }, [selectTemplate]);
 };

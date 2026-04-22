@@ -35,6 +35,7 @@ const ConnectedPreviewSection = memo(({
   const section = useBuilderStore((state) =>
     selectTemplateSection(state, templateId, sectionId),
   );
+  // Only highlight selection when the selected element belongs to this section.
   const selectedElementId = useBuilderStore((state) =>
     selectActiveSectionId(state, templateId) === sectionId
       ? selectActiveElementId(state, templateId)
