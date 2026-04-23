@@ -18,27 +18,6 @@ import {
 
 import { ElementRenderer } from './element-renderer';
 
-type TemplatePreviewElementProps = {
-  element: TemplateElement;
-  isInteractive: boolean;
-  isSelected?: boolean;
-  onSelectElement?: (elementId: string) => void;
-};
-
-const TemplatePreviewElement = memo(({
-  element,
-  isInteractive,
-  isSelected = false,
-  onSelectElement,
-}: TemplatePreviewElementProps) => (
-  <ElementRenderer
-    element={element}
-    isSelected={isSelected}
-    isInteractive={isInteractive}
-    onClick={onSelectElement}
-  />
-));
-
 type RenderPreviewElement = (element: TemplateElement) => ReactNode;
 
 type PreviewColumnProps = {
@@ -72,11 +51,11 @@ export const TemplatePreviewSection = memo(({
   selectedElementId,
 }: TemplatePreviewSectionProps) => {
   const renderResolvedElement = renderElement ?? ((element: TemplateElement) => (
-    <TemplatePreviewElement
+    <ElementRenderer
       element={element}
       isInteractive={isInteractive}
       isSelected={selectedElementId === element.id}
-      onSelectElement={onSelectElement}
+      onClick={onSelectElement}
     />
   ));
   const sectionStyle = getSectionStyle(section);

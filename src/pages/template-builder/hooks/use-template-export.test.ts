@@ -8,6 +8,8 @@ import type { Template, TemplateElement } from '@/types/template';
 
 import { useTemplateExport } from './use-template-export';
 
+type UseTemplateExportSelector = Parameters<typeof useTemplateExport>[0];
+
 const downloadHtml = vi.fn();
 
 vi.mock('@/utils/export-to-html', () => ({
@@ -102,11 +104,8 @@ describe('useTemplateExport', () => {
   it('keeps a stable export callback while using the latest template value', async () => {
     const selectTemplate = createSelectMaterializedTemplate('portfolio');
     const { result, rerender } = renderHook(
-      ({ selector }: {
-        selector:
-          | ((state: { templateMap: Record<string, unknown> }) => Template | undefined)
-          | null;
-      }) => useTemplateExport(selector as ReturnType<typeof createSelectMaterializedTemplate>),
+      ({ selector }: { selector: UseTemplateExportSelector }) =>
+        useTemplateExport(selector),
       {
         initialProps: {
           selector: selectTemplate,
