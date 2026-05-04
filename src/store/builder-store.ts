@@ -6,6 +6,7 @@ import { TEMPLATES } from "@/constants/templates";
 import {
   type BuilderTemplate,
   buildTemplateMap,
+  isSectionOrderPermutation,
   normalizeTemplate,
   patchTemplateElementData,
   patchTemplateElementSettings,
@@ -50,6 +51,13 @@ export type BuilderState = {
     file: File,
   ) => void;
   resetTemplate: (templateId: string) => void;
+  reorderSections: (
+    templateId: string,
+    fromIndex: number,
+    toIndex: number,
+  ) => void;
+  /** Replace section order when rolling back a failed persist or hydrating from API. */
+  setSectionOrder: (templateId: string, order: string[]) => void;
 };
 
 export const useBuilderStore = create<BuilderState>()(
@@ -110,6 +118,33 @@ export const useBuilderStore = create<BuilderState>()(
           if (!original) return;
           draft.templateMap[templateId] = normalizeTemplate(original);
           draft.session.selectedElementIds[templateId] = null;
+        }),
+
+      reorderSections: (templateId, fromIndex, toIndex) =>
+        set((draft) => {
+          const template = draft.templateMap[templateId];
+          if (!template) return;
+          const { sectionOrder } = template;
+          if (fromIndex === toIndex) return;
+          if (
+            fromIndex < 0 ||
+            toIndex < 0 ||
+            fromIndex >= sectionOrder.length ||
+            toIndex >= sectionOrder.length
+          ) {
+            return;
+          }
+          const moved = sectionOrder.splice(fromIndex, 1)[0];
+          if (moved === undefined) return;
+          sectionOrder.splice(toIndex, 0, moved);
+        }),
+
+      setSectionOrder: (templateId, order) =>
+        set((draft) => {
+          const template = draft.templateMap[templateId];
+          if (!template) return;
+          if (!isSectionOrderPermutation(order, template.sectionOrder)) return;
+          template.sectionOrder = [...order];
         }),
     })),
     {

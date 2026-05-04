@@ -248,6 +248,7 @@ export const Modal = ({
 export const Icon = ({ icon }: { icon: ReactNode; size?: string }) => <span>{icon}</span>;
 export const IconArrowLeft = () => <span aria-hidden="true">arrow-left</span>;
 export const IconDownload = () => <span aria-hidden="true">download</span>;
+export const IconDrag = () => <span aria-hidden="true">drag</span>;
 export const IconLink = () => <span aria-hidden="true">link</span>;
 export const IconReset = () => <span aria-hidden="true">reset</span>;
 export const IconTextAlignCenter = () => <span aria-hidden="true">align-center</span>;

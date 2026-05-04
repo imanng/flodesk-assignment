@@ -1,5 +1,7 @@
-import { Box } from '@flodesk/grain';
-import { memo } from 'react';
+import { DragDropProvider, type DragEndEvent } from '@dnd-kit/react';
+import { useSortable } from '@dnd-kit/react/sortable';
+import { Box, IconDrag } from '@flodesk/grain';
+import { memo, useCallback } from 'react';
 
 import {
   TemplatePreviewPage,
@@ -35,7 +37,6 @@ const ConnectedPreviewSection = memo(({
   const section = useBuilderStore((state) =>
     selectTemplateSection(state, templateId, sectionId),
   );
-  // Only highlight selection when the selected element belongs to this section.
   const selectedElementId = useBuilderStore((state) =>
     selectActiveSectionId(state, templateId) === sectionId
       ? selectActiveElementId(state, templateId)
@@ -54,6 +55,55 @@ const ConnectedPreviewSection = memo(({
   );
 });
 
+type SortablePreviewSectionRowProps = {
+  index: number;
+  onSelectElement: (elementId: string) => void;
+  sectionId: string;
+  templateId: string;
+};
+
+const SortablePreviewSectionRow = memo(function SortablePreviewSectionRow({
+  index,
+  onSelectElement,
+  sectionId,
+  templateId,
+}: SortablePreviewSectionRowProps) {
+  const { handleRef, isDragSource, ref } = useSortable({
+    id: sectionId,
+    index,
+  });
+
+  return (
+    <div
+      ref={ref}
+      className="preview-sortable-section"
+      style={{
+        opacity: isDragSource ? 0.92 : undefined,
+      }}
+    >
+      <button
+        ref={handleRef}
+        type="button"
+        className="preview-sortable-section__handle"
+        aria-label="Drag to reorder section"
+        onPointerDown={(event) => event.stopPropagation()}
+      >
+        <IconDrag
+          aria-hidden
+          className="preview-sortable-section__grip-icon"
+          height={20}
+          width={10}
+        />
+      </button>
+      <ConnectedPreviewSection
+        onSelectElement={onSelectElement}
+        sectionId={sectionId}
+        templateId={templateId}
+      />
+    </div>
+  );
+});
+
 const PreviewComponent = ({
   onDeselectAll,
   onSelectElement,
@@ -61,6 +111,21 @@ const PreviewComponent = ({
   sectionIds,
   templateId,
 }: PreviewProps) => {
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      if (event.canceled || event.operation.canceled) return;
+      const { source, target } = event.operation;
+      if (!source || !target) return;
+      const fromIndex = sectionIds.indexOf(String(source.id));
+      const toIndex = sectionIds.indexOf(String(target.id));
+      if (fromIndex === -1 || toIndex === -1 || fromIndex === toIndex) return;
+      useBuilderStore
+        .getState()
+        .reorderSections(templateId, fromIndex, toIndex);
+    },
+    [sectionIds, templateId],
+  );
+
   if (sectionIds.length === 0) return null;
 
   return (
@@ -81,14 +146,17 @@ const PreviewComponent = ({
         margin="0 auto"
       >
         <TemplatePreviewPage pageSettings={pageSettings}>
-          {sectionIds.map((sectionId) => (
-            <ConnectedPreviewSection
-              key={sectionId}
-              onSelectElement={onSelectElement}
-              sectionId={sectionId}
-              templateId={templateId}
-            />
-          ))}
+          <DragDropProvider onDragEnd={handleDragEnd}>
+            {sectionIds.map((sectionId, index) => (
+              <SortablePreviewSectionRow
+                key={sectionId}
+                index={index}
+                onSelectElement={onSelectElement}
+                sectionId={sectionId}
+                templateId={templateId}
+              />
+            ))}
+          </DragDropProvider>
         </TemplatePreviewPage>
       </Box>
     </Box>

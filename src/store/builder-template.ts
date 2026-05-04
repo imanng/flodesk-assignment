@@ -78,6 +78,19 @@ export const getTemplateSectionOrder = (
   template?: BuilderTemplate,
 ): string[] | undefined => template?.sectionOrder;
 
+/**
+ * True when `candidate` is a permutation of `baseline` (same multiset of section ids).
+ */
+export const isSectionOrderPermutation = (
+  candidate: string[],
+  baseline: string[],
+): boolean => {
+  if (candidate.length !== baseline.length) return false;
+  const sortedCandidate = [...candidate].sort();
+  const sortedBaseline = [...baseline].sort();
+  return sortedCandidate.every((id, index) => id === sortedBaseline[index]);
+};
+
 export const getTemplateSection = (
   template: BuilderTemplate | undefined,
   sectionId: string,

@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { selectTemplateSectionOrder } from '@/store/builder-selector';
 import { useBuilderStore } from '@/store/builder-store';
 import { getTemplate, resetBuilderStore } from '@/test/builder-store-helpers';
 import type { PageSettings } from '@/types/template';
@@ -196,6 +197,85 @@ describe('Preview', () => {
           backgroundColor: '#f5f5f5',
         }}
         sectionIds={sectionIds}
+        templateId={templateId}
+      />,
+    );
+
+    expect(getCount('hero')).toBe(1);
+    expect(getCount('about')).toBe(1);
+    expect(getCount('cta')).toBe(1);
+  });
+
+  it('lists sections in store order after reorder when sectionIds prop matches the store', () => {
+    const onSelectElement = vi.fn();
+    const onDeselectAll = vi.fn();
+
+    const { rerender } = render(
+      <Preview
+        onSelectElement={onSelectElement}
+        onDeselectAll={onDeselectAll}
+        pageSettings={pageSettings}
+        sectionIds={sectionIds}
+        templateId={templateId}
+      />,
+    );
+
+    act(() => {
+      useBuilderStore.getState().reorderSections(templateId, 0, sectionIds.length - 1);
+    });
+
+    const nextIds =
+      selectTemplateSectionOrder(useBuilderStore.getState(), templateId) ?? [];
+
+    rerender(
+      <Preview
+        onSelectElement={onSelectElement}
+        onDeselectAll={onDeselectAll}
+        pageSettings={pageSettings}
+        sectionIds={nextIds}
+        templateId={templateId}
+      />,
+    );
+
+    const domIds = screen.getAllByTestId(/^section-/).map((el) => {
+      const id = el.getAttribute('data-testid');
+      return id?.startsWith('section-') ? id.slice('section-'.length) : '';
+    });
+
+    expect(domIds).toEqual(nextIds);
+  });
+
+  it('does not rerender section bodies when only section order props change', () => {
+    const onSelectElement = vi.fn();
+    const onDeselectAll = vi.fn();
+
+    const { rerender } = render(
+      <Preview
+        onSelectElement={onSelectElement}
+        onDeselectAll={onDeselectAll}
+        pageSettings={pageSettings}
+        sectionIds={sectionIds}
+        templateId={templateId}
+      />,
+    );
+
+    expect(getCount('hero')).toBe(1);
+    expect(getCount('about')).toBe(1);
+    expect(getCount('cta')).toBe(1);
+
+    act(() => {
+      useBuilderStore.getState().reorderSections(templateId, 0, sectionIds.length - 1);
+    });
+
+    const nextIds =
+      selectTemplateSectionOrder(useBuilderStore.getState(), templateId) ?? [];
+
+    rerender(
+      <Preview
+        onSelectElement={onSelectElement}
+        onDeselectAll={onDeselectAll}
+        pageSettings={pageSettings}
+        sectionIds={nextIds}
         templateId={templateId}
       />,
     );
