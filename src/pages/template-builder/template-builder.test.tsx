@@ -1,5 +1,5 @@
 import { GrainProvider } from '@flodesk/grain';
-import { act, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {
   MemoryRouter,
@@ -81,7 +81,7 @@ describe('TemplateBuilder', () => {
         /This will replace your current edits with the original template defaults\./i,
       ),
     ).toBeInTheDocument();
-    expect(screen.getByText(/You can't undo this action\./i)).toBeInTheDocument();
+    expect(screen.getByText(/You can undo the reset from the toolbar or keyboard shortcut\./i)).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
 
@@ -101,6 +101,51 @@ describe('TemplateBuilder', () => {
     expect(screen.queryByText('Draft about copy')).not.toBeInTheDocument();
     expect(await screen.findByText('Page Settings')).toBeInTheDocument();
     expect(getSelectedElementId('portfolio')).toBeNull();
+  });
+
+  it('undoes and redoes edits from the header and keyboard shortcuts', async () => {
+    const user = userEvent.setup();
+
+    renderTemplateBuilder();
+
+    const undoButton = screen.getByRole('button', { name: 'Undo' });
+    const redoButton = screen.getByRole('button', { name: 'Redo' });
+
+    expect(undoButton).toBeDisabled();
+    expect(redoButton).toBeDisabled();
+
+    act(() => {
+      useBuilderStore.getState().updateElementData('portfolio', 'about-text', 'text', {
+        text: 'Toolbar undo draft',
+      });
+    });
+
+    expect(screen.getByText('Toolbar undo draft')).toBeInTheDocument();
+    expect(undoButton).not.toBeDisabled();
+    expect(redoButton).toBeDisabled();
+
+    await user.click(undoButton);
+
+    expect(screen.queryByText('Toolbar undo draft')).not.toBeInTheDocument();
+    expect(undoButton).toBeDisabled();
+    expect(redoButton).not.toBeDisabled();
+
+    fireEvent.keyDown(window, {
+      key: 'z',
+      metaKey: true,
+      shiftKey: true,
+    });
+
+    expect(screen.getByText('Toolbar undo draft')).toBeInTheDocument();
+    expect(undoButton).not.toBeDisabled();
+    expect(redoButton).toBeDisabled();
+
+    fireEvent.keyDown(window, {
+      key: 'z',
+      ctrlKey: true,
+    });
+
+    expect(screen.queryByText('Toolbar undo draft')).not.toBeInTheDocument();
   });
 
   it('clears selection when navigating between templates', async () => {

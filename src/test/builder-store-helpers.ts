@@ -21,11 +21,12 @@ const findElementInSection = (
 export const resetBuilderStore = () => {
   localStorage.clear();
 
-  const { clearSelection, resetTemplate } = useBuilderStore.getState();
+  const { clearHistory, clearSelection, resetTemplate } = useBuilderStore.getState();
   for (const template of TEMPLATES) {
     resetTemplate(template.id);
     clearSelection(template.id);
   }
+  clearHistory();
 };
 
 export const getSelectedElementId = (templateId: string): string | null =>

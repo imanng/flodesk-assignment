@@ -5,6 +5,8 @@ import {
   createSelectMaterializedTemplate,
   selectActiveElementId,
   selectActiveElementType,
+  selectCanRedo,
+  selectCanUndo,
   selectPageSettings,
   selectTemplateName,
   selectTemplateSectionOrder,
@@ -37,8 +39,10 @@ export const useTemplateBuilder = (): TemplateBuilderModel | null => {
 
   // Store actions used by the composed builder view model.
   const clearSelection = useBuilderStore((state) => state.clearSelection);
+  const redoTemplateInStore = useBuilderStore((state) => state.redoTemplate);
   const resetTemplate = useBuilderStore((state) => state.resetTemplate);
   const selectElementInStore = useBuilderStore((state) => state.selectElement);
+  const undoTemplateInStore = useBuilderStore((state) => state.undoTemplate);
 
   // Memoized materializer used by export to avoid repeated reconstruction.
   const selectMaterializedTemplate = useMemo(
@@ -63,6 +67,12 @@ export const useTemplateBuilder = (): TemplateBuilderModel | null => {
   );
   const templateName = useBuilderStore((state) =>
     templateId ? selectTemplateName(state, templateId) : undefined,
+  );
+  const canUndo = useBuilderStore((state) =>
+    templateId ? selectCanUndo(state, templateId) : false,
+  );
+  const canRedo = useBuilderStore((state) =>
+    templateId ? selectCanRedo(state, templateId) : false,
   );
 
   // Export pipeline: select current materialized template, then download.
@@ -97,6 +107,47 @@ export const useTemplateBuilder = (): TemplateBuilderModel | null => {
     resetTemplate(templateId);
   }, [resetTemplate, templateId]);
 
+  const undoTemplate = useCallback(() => {
+    if (!templateId) return;
+    undoTemplateInStore(templateId);
+  }, [templateId, undoTemplateInStore]);
+
+  const redoTemplate = useCallback(() => {
+    if (!templateId) return;
+    redoTemplateInStore(templateId);
+  }, [redoTemplateInStore, templateId]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!templateId || event.altKey || !(event.ctrlKey || event.metaKey)) {
+        return;
+      }
+
+      const key = event.key.toLowerCase();
+      const isRedoShortcut =
+        (key === "z" && event.shiftKey);
+
+      if (isRedoShortcut) {
+        if (!canRedo) return;
+        event.preventDefault();
+        redoTemplate();
+        return;
+      }
+
+      if (key === "z" && !event.shiftKey) {
+        if (!canUndo) return;
+        event.preventDefault();
+        undoTemplate();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [canRedo, canUndo, redoTemplate, templateId, undoTemplate]);
+
   if (!templateId || !pageSettings) {
     return null;
   }
@@ -107,10 +158,14 @@ export const useTemplateBuilder = (): TemplateBuilderModel | null => {
 
   return {
     header: {
+      canRedo,
+      canUndo,
       templateName,
       onExportTemplate: exportTemplate,
       onGoBack: goBack,
+      onRedoTemplate: redoTemplate,
       onResetTemplate: handleResetTemplate,
+      onUndoTemplate: undoTemplate,
     },
     preview: {
       onDeselectAll: deselectAll,

@@ -12,5 +12,7 @@ export const useBuilderActions = () =>
       updateElementData: state.updateElementData,
       updateElementImage: state.updateElementImage,
       resetTemplate: state.resetTemplate,
+      undoTemplate: state.undoTemplate,
+      redoTemplate: state.redoTemplate,
     })),
   );

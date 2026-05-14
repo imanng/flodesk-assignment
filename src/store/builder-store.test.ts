@@ -1,6 +1,10 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { selectTemplateSectionOrder } from '@/store/builder-selector';
+import {
+  selectCanRedo,
+  selectCanUndo,
+  selectTemplateSectionOrder,
+} from '@/store/builder-selector';
 import {
   getElement,
   getSelectedElementId,
@@ -232,5 +236,224 @@ describe('useBuilderStore', () => {
     const heroAfter = JSON.stringify(getTemplate(templateId).sections.find((s) => s.id === 'hero'));
 
     expect(heroAfter).toBe(heroBefore);
+  });
+
+  it('undoes and redoes page edits, and clears redo after a new edit', () => {
+    const templateId = 'portfolio';
+    const initialBackground = getTemplate(templateId).pageSettings.backgroundColor;
+
+    useBuilderStore
+      .getState()
+      .updatePageSettings(templateId, { backgroundColor: '#123456' });
+
+    expect(getTemplate(templateId).pageSettings.backgroundColor).toBe('#123456');
+    expect(selectCanUndo(useBuilderStore.getState(), templateId)).toBe(true);
+    expect(selectCanRedo(useBuilderStore.getState(), templateId)).toBe(false);
+
+    useBuilderStore.getState().undoTemplate(templateId);
+
+    expect(getTemplate(templateId).pageSettings.backgroundColor).toBe(initialBackground);
+    expect(selectCanUndo(useBuilderStore.getState(), templateId)).toBe(false);
+    expect(selectCanRedo(useBuilderStore.getState(), templateId)).toBe(true);
+
+    useBuilderStore.getState().redoTemplate(templateId);
+
+    expect(getTemplate(templateId).pageSettings.backgroundColor).toBe('#123456');
+
+    useBuilderStore.getState().undoTemplate(templateId);
+    useBuilderStore.getState().updatePageSettings(templateId, { maxWidth: '920px' });
+
+    expect(selectCanRedo(useBuilderStore.getState(), templateId)).toBe(false);
+  });
+
+  it('groups rapid repeated edits to the same field into one history step', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(0));
+
+    try {
+      const templateId = 'portfolio';
+      const initialText = getElement(templateId, 'about-text');
+      if (initialText.type !== 'text') {
+        throw new Error('Expected about-text to be a text element');
+      }
+
+      useBuilderStore.getState().updateElementData(templateId, 'about-text', 'text', {
+        text: 'Draft 1',
+      });
+      vi.setSystemTime(new Date(400));
+      useBuilderStore.getState().updateElementData(templateId, 'about-text', 'text', {
+        text: 'Draft 2',
+      });
+
+      expect(
+        useBuilderStore.getState().session.historyByTemplateId[templateId]?.past,
+      ).toHaveLength(1);
+
+      useBuilderStore.getState().undoTemplate(templateId);
+
+      const undoneText = getElement(templateId, 'about-text');
+      if (undoneText.type !== 'text') {
+        throw new Error('Expected about-text to be a text element after undo');
+      }
+
+      expect(undoneText.data.text).toBe(initialText.data.text);
+
+      useBuilderStore.getState().redoTemplate(templateId);
+
+      const redoneText = getElement(templateId, 'about-text');
+      if (redoneText.type !== 'text') {
+        throw new Error('Expected about-text to be a text element after redo');
+      }
+
+      expect(redoneText.data.text).toBe('Draft 2');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('keeps undo stacks isolated per template', () => {
+    useBuilderStore
+      .getState()
+      .updatePageSettings('portfolio', { backgroundColor: '#111111' });
+    useBuilderStore
+      .getState()
+      .updatePageSettings('restaurant', { backgroundColor: '#222222' });
+
+    useBuilderStore.getState().undoTemplate('portfolio');
+
+    expect(getTemplate('portfolio').pageSettings.backgroundColor).not.toBe('#111111');
+    expect(getTemplate('restaurant').pageSettings.backgroundColor).toBe('#222222');
+    expect(selectCanRedo(useBuilderStore.getState(), 'portfolio')).toBe(true);
+    expect(selectCanUndo(useBuilderStore.getState(), 'restaurant')).toBe(true);
+  });
+
+  it('undoes and redoes reset while restoring the previous selection', () => {
+    const templateId = 'portfolio';
+
+    useBuilderStore.getState().updateElementData(templateId, 'about-text', 'text', {
+      text: 'Resettable draft copy',
+    });
+    useBuilderStore.getState().selectElement(templateId, 'about-text');
+    useBuilderStore.getState().resetTemplate(templateId);
+
+    expect(getSelectedElementId(templateId)).toBeNull();
+    expect(getTemplate(templateId).sections.some((section) =>
+      JSON.stringify(section).includes('Resettable draft copy'),
+    )).toBe(false);
+
+    useBuilderStore.getState().undoTemplate(templateId);
+
+    const restoredText = getElement(templateId, 'about-text');
+    if (restoredText.type !== 'text') {
+      throw new Error('Expected about-text to be a text element after undo');
+    }
+
+    expect(restoredText.data.text).toBe('Resettable draft copy');
+    expect(getSelectedElementId(templateId)).toBe('about-text');
+
+    useBuilderStore.getState().redoTemplate(templateId);
+
+    expect(getSelectedElementId(templateId)).toBeNull();
+    expect(getTemplate(templateId).sections.some((section) =>
+      JSON.stringify(section).includes('Resettable draft copy'),
+    )).toBe(false);
+  });
+
+  it('undoes and redoes section reorder', () => {
+    const templateId = 'portfolio';
+    const before = selectTemplateSectionOrder(useBuilderStore.getState(), templateId);
+    if (!before) throw new Error('Expected portfolio section order');
+
+    useBuilderStore.getState().reorderSections(templateId, 0, before.length - 1);
+
+    expect(selectTemplateSectionOrder(useBuilderStore.getState(), templateId)).toEqual([
+      ...before.slice(1),
+      before[0],
+    ]);
+
+    useBuilderStore.getState().undoTemplate(templateId);
+
+    expect(selectTemplateSectionOrder(useBuilderStore.getState(), templateId)).toEqual(before);
+
+    useBuilderStore.getState().redoTemplate(templateId);
+
+    expect(selectTemplateSectionOrder(useBuilderStore.getState(), templateId)).toEqual([
+      ...before.slice(1),
+      before[0],
+    ]);
+  });
+
+  it('undoes and redoes uploaded images', () => {
+    const originalFileReader = globalThis.FileReader;
+    const dataUrl = 'data:image/png;base64,ZmFrZS1pbWFnZQ==';
+    const templateId = 'portfolio';
+    const originalImage = getElement(templateId, 'about-image');
+    if (originalImage.type !== 'image') {
+      throw new Error('Expected about-image to be an image element');
+    }
+
+    class MockFileReader {
+      result: string | ArrayBuffer | null = null;
+
+      onload:
+        | ((this: FileReader, event: ProgressEvent<FileReader>) => void)
+        | null = null;
+
+      readAsDataURL() {
+        this.result = dataUrl;
+        this.onload?.call(
+          this as unknown as FileReader,
+          new ProgressEvent('load') as ProgressEvent<FileReader>,
+        );
+      }
+    }
+
+    Object.defineProperty(globalThis, 'FileReader', {
+      configurable: true,
+      writable: true,
+      value: MockFileReader,
+    });
+
+    try {
+      const file = new File(['image'], 'hero.png', { type: 'image/png' });
+      useBuilderStore
+        .getState()
+        .updateElementImage(templateId, 'about-image', file);
+
+      expect((getElement(templateId, 'about-image') as typeof originalImage).data.src).toBe(dataUrl);
+
+      useBuilderStore.getState().undoTemplate(templateId);
+
+      expect((getElement(templateId, 'about-image') as typeof originalImage).data.src).toBe(
+        originalImage.data.src,
+      );
+
+      useBuilderStore.getState().redoTemplate(templateId);
+
+      expect((getElement(templateId, 'about-image') as typeof originalImage).data.src).toBe(dataUrl);
+    } finally {
+      Object.defineProperty(globalThis, 'FileReader', {
+        configurable: true,
+        writable: true,
+        value: originalFileReader,
+      });
+    }
+  });
+
+  it('does not create history for selection changes or no-op edits', () => {
+    const templateId = 'portfolio';
+    const heading = getElement(templateId, 'hero-heading');
+    if (heading.type !== 'heading') {
+      throw new Error('Expected hero-heading to be a heading element');
+    }
+
+    useBuilderStore.getState().selectElement(templateId, 'hero-heading');
+    useBuilderStore.getState().clearSelection(templateId);
+    useBuilderStore.getState().updateElementSettings(templateId, 'hero-heading', {
+      fontSize: heading.settings.fontSize,
+    });
+    useBuilderStore.getState().reorderSections(templateId, 0, 0);
+
+    expect(selectCanUndo(useBuilderStore.getState(), templateId)).toBe(false);
   });
 });

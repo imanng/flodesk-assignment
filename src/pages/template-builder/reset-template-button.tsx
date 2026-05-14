@@ -37,7 +37,7 @@ export const ResetTemplateButton = ({ onReset }: ResetTemplateButtonProps) => {
         onClose={closeConfirm}
         hasCloseButton={false}
         title="Reset to defaults?"
-        description="This will replace your current edits with the original template defaults. You can't undo this action."
+        description="This will replace your current edits with the original template defaults. You can undo the reset from the toolbar or keyboard shortcut."
         cardMaxWidth="narrow"
         cardPadding="var(--grn-card-padding)"
         cardRadius="var(--grn-card-radius)"

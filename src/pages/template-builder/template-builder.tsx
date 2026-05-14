@@ -15,9 +15,13 @@ export const TemplateBuilder = () => {
   return (
     <Flex direction="column" height="100%" width="100%">
       <TemplateBuilderHeader
+        canRedo={header.canRedo}
+        canUndo={header.canUndo}
         onExportTemplate={header.onExportTemplate}
         onGoBack={header.onGoBack}
+        onRedoTemplate={header.onRedoTemplate}
         onResetTemplate={header.onResetTemplate}
+        onUndoTemplate={header.onUndoTemplate}
         templateName={header.templateName}
       />
       <Flex flex="1" overflow="auto" width="100%">

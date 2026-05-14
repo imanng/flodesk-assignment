@@ -27,6 +27,18 @@ const selectSelectedElementId = (
   templateId: string,
 ): string | null => state.session.selectedElementIds[templateId] ?? null;
 
+export const selectCanUndo = (
+  state: Pick<BuilderState, "session">,
+  templateId: string,
+): boolean =>
+  Boolean(state.session.historyByTemplateId[templateId]?.past.length);
+
+export const selectCanRedo = (
+  state: Pick<BuilderState, "session">,
+  templateId: string,
+): boolean =>
+  Boolean(state.session.historyByTemplateId[templateId]?.future.length);
+
 /**
  * Page-level settings consumed by preview and page settings panel.
  */

@@ -1,19 +1,19 @@
-import { DragDropProvider, type DragEndEvent } from '@dnd-kit/react';
-import { useSortable } from '@dnd-kit/react/sortable';
-import { Box, IconDrag } from '@flodesk/grain';
-import { memo, useCallback } from 'react';
+import { DragDropProvider, type DragEndEvent } from "@dnd-kit/react";
+import { isSortable, useSortable } from "@dnd-kit/react/sortable";
+import { Box, IconDrag } from "@flodesk/grain";
+import { memo, useCallback } from "react";
 
 import {
   TemplatePreviewPage,
   TemplatePreviewSection,
-} from '@/components/template-preview';
+} from "@/components/template-preview";
 import {
   selectActiveElementId,
   selectActiveSectionId,
   selectTemplateSection,
-} from '@/store/builder-selector';
-import { useBuilderStore } from '@/store/builder-store';
-import type { PageSettings } from '@/types/template';
+} from "@/store/builder-selector";
+import { useBuilderStore } from "@/store/builder-store";
+import type { PageSettings } from "@/types/template";
 
 export type PreviewProps = {
   onDeselectAll: () => void;
@@ -29,31 +29,33 @@ type ConnectedPreviewSectionProps = {
   templateId: string;
 };
 
-const ConnectedPreviewSection = memo(({
-  onSelectElement,
-  sectionId,
-  templateId,
-}: ConnectedPreviewSectionProps) => {
-  const section = useBuilderStore((state) =>
-    selectTemplateSection(state, templateId, sectionId),
-  );
-  const selectedElementId = useBuilderStore((state) =>
-    selectActiveSectionId(state, templateId) === sectionId
-      ? selectActiveElementId(state, templateId)
-      : null,
-  );
+const ConnectedPreviewSection = memo(
+  ({
+    onSelectElement,
+    sectionId,
+    templateId,
+  }: ConnectedPreviewSectionProps) => {
+    const section = useBuilderStore((state) =>
+      selectTemplateSection(state, templateId, sectionId),
+    );
+    const selectedElementId = useBuilderStore((state) =>
+      selectActiveSectionId(state, templateId) === sectionId
+        ? selectActiveElementId(state, templateId)
+        : null,
+    );
 
-  if (!section) return null;
+    if (!section) return null;
 
-  return (
-    <TemplatePreviewSection
-      isInteractive
-      onSelectElement={onSelectElement}
-      section={section}
-      selectedElementId={selectedElementId}
-    />
-  );
-});
+    return (
+      <TemplatePreviewSection
+        isInteractive
+        onSelectElement={onSelectElement}
+        section={section}
+        selectedElementId={selectedElementId}
+      />
+    );
+  },
+);
 
 type SortablePreviewSectionRowProps = {
   index: number;
@@ -115,15 +117,17 @@ const PreviewComponent = ({
     (event: DragEndEvent) => {
       if (event.canceled || event.operation.canceled) return;
       const { source, target } = event.operation;
-      if (!source || !target) return;
-      const fromIndex = sectionIds.indexOf(String(source.id));
-      const toIndex = sectionIds.indexOf(String(target.id));
+      if (!source || !target || !isSortable(source)) return;
+      const fromIndex = source.initialIndex;
+      const toIndex = source.index;
+
       if (fromIndex === -1 || toIndex === -1 || fromIndex === toIndex) return;
+
       useBuilderStore
         .getState()
         .reorderSections(templateId, fromIndex, toIndex);
     },
-    [sectionIds, templateId],
+    [templateId],
   );
 
   if (sectionIds.length === 0) return null;
